@@ -1,0 +1,1182 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>작업지시 관리 · 태진다이텍 MES</title>
+<style>
+:root{
+  --bg:#f3f5f8; --panel:#fff; --ink:#1d2433; --sub:#5b6474; --line:#d7dce4; --head:#e9edf3;
+  --blue:#1565c0; --blue-d:#0d4a8f; --green:#2e7d32; --orange:#ef7d00; --red:#c62828; --teal:#00838f; --gray:#e4e7ec;
+  --info:#eef4fb; --info-line:#b7cce4; --title:#1f4e79;
+  --err:#ffc7ce; --warn:#ffeb9c; --dup:#ddebf7; --ok:#c6efce; --edit:#ffd8a8; --sel:#b9d7ff;
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{font-family:"맑은 고딕","Malgun Gothic","Apple SD Gothic Neo",system-ui,sans-serif;font-size:13px;color:var(--ink);background:var(--bg)}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer;border:1px solid #b9c0cc;background:#fff;border-radius:6px;padding:7px 12px;white-space:nowrap}
+button:hover{filter:brightness(.96)}
+button:disabled{opacity:.5;cursor:default}
+.b-blue{background:var(--blue);border-color:var(--blue-d);color:#fff;font-weight:bold}
+.b-green{background:var(--green);border-color:#1b5e20;color:#fff;font-weight:bold}
+.b-orange{background:var(--orange);border-color:#c66800;color:#fff;font-weight:bold}
+.b-red{background:var(--red);border-color:#8e1b1b;color:#fff;font-weight:bold}
+.b-teal{background:var(--teal);border-color:#006064;color:#fff;font-weight:bold}
+.b-big{padding:9px 16px}
+input[type=text],input[type=date],input[type=number],input[type=password],select,textarea{border:1px solid #b9c0cc;border-radius:5px;padding:6px 8px;background:#fff;min-width:0}
+input:focus,select:focus,textarea:focus{outline:2px solid #90bdf5;outline-offset:0}
+label.chk{display:inline-flex;align-items:center;gap:4px;white-space:nowrap;cursor:pointer}
+.top{display:flex;align-items:center;gap:10px;padding:8px 14px;background:#1f3b5c;color:#fff;flex-wrap:wrap}
+.top h1{font-size:16px;margin:0;flex:1;min-width:200px}
+.top .who{display:flex;align-items:center;gap:6px}
+.top .who input{width:110px;padding:4px 8px}
+.dot{display:inline-block;width:10px;height:10px;border-radius:50%;background:#999;margin-right:4px}
+.dot.ok{background:#4caf50}.dot.bad{background:#f44336}
+.wrap{padding:10px 14px;display:flex;flex-direction:column;gap:8px;height:calc(100% - 46px)}
+.info{background:var(--info);border:1px solid var(--info-line);border-radius:6px;padding:8px 12px}
+.info b.t{color:var(--title);font-size:15px}
+.info .l1{color:#333;margin-top:3px}
+.info .l2{color:var(--green);font-weight:bold;margin-top:3px}
+.bar{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.bar .sp{flex:1}
+.bar .sep{width:1px;align-self:stretch;background:var(--line);margin:0 4px}
+.legend{color:var(--sub);font-size:12px}
+.f-date{width:140px}
+.status{font-weight:bold;color:#333;min-height:18px}
+.status .sum{color:var(--red);font-weight:normal}
+.tbox{flex:1;min-height:260px;overflow:auto;background:#fff;border:1px solid var(--line);border-radius:6px;position:relative}
+table.g{border-collapse:separate;border-spacing:0;font-size:12.5px;width:max-content;min-width:100%}
+table.g th,table.g td{border-right:1px solid #e3e6eb;border-bottom:1px solid #e3e6eb;padding:5px 8px;white-space:nowrap;max-width:360px;overflow:hidden;text-overflow:ellipsis;text-align:left}
+table.g th{position:sticky;top:0;background:var(--head);z-index:2;font-weight:bold;cursor:default;user-select:none}
+table.g th.sort{cursor:pointer}
+table.g td.ck,table.g th.ck{position:sticky;left:0;background:inherit;z-index:1;width:30px;text-align:center;padding:0 4px}
+table.g th.ck{z-index:3;background:var(--head)}
+table.g tbody tr{background:#fff}
+table.g tbody tr:hover{filter:brightness(.97)}
+tr.err{background:var(--err)!important}tr.warn{background:var(--warn)!important}tr.dup{background:var(--dup)!important}
+tr.ok{background:var(--ok)!important}tr.edit{background:#fff3e6!important}
+tr.sel td{box-shadow:inset 0 2px 0 #2b7de9,inset 0 -2px 0 #2b7de9;font-weight:bold}
+td.chg{background:var(--edit)!important}
+td.num{text-align:right}
+.more{padding:10px;text-align:center}
+.empty{padding:40px;text-align:center;color:var(--sub)}
+.mode-on{background:#fff3e0;border-radius:6px;padding:2px 8px;outline:2px solid var(--orange)}
+/* 덮개·창 */
+.ov{position:fixed;inset:0;background:rgba(20,30,45,.45);display:flex;align-items:center;justify-content:center;z-index:50;padding:12px}
+.dlg{background:#fff;border-radius:10px;box-shadow:0 10px 40px rgba(0,0,0,.3);max-width:min(760px,100%);width:100%;max-height:calc(100vh - 24px);display:flex;flex-direction:column}
+.dlg.wide{max-width:min(1500px,100%);height:calc(100vh - 24px)}
+.dlg.mid{max-width:min(900px,100%)}
+.dlg h3{margin:0;padding:12px 16px;border-bottom:1px solid var(--line);font-size:15px;color:var(--title)}
+.dlg .bd{padding:12px 16px;overflow:auto;flex:1}
+.dlg .ft{padding:10px 16px;border-top:1px solid var(--line);display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap}
+.dlg pre{white-space:pre-wrap;font-family:inherit;margin:0;line-height:1.55}
+.busy{position:fixed;inset:0;background:rgba(255,255,255,.55);z-index:90;display:none;align-items:center;justify-content:center}
+.busy.on{display:flex}
+.busy div{background:#1f3b5c;color:#fff;padding:12px 20px;border-radius:8px;font-weight:bold}
+.form{display:grid;grid-template-columns:110px 1fr;gap:9px 12px;align-items:center}
+.form .lab{font-weight:bold}
+.form .note{grid-column:2;font-size:12px;color:var(--sub);margin-top:-5px}
+.form .note.bad{color:var(--red)}.form .note.good{color:var(--green)}
+.hint{color:var(--sub);font-size:12px}
+.red{color:var(--red)}.green{color:var(--green)}
+.list{border:1px solid var(--line);border-radius:6px;max-height:50vh;overflow:auto}
+.list div{padding:6px 10px;border-bottom:1px solid #eef0f3;cursor:pointer}
+.list div:hover,.list div.on{background:#e3efff}
+.list div.w{background:var(--warn)}
+/* 글자 치면 걸러지는 입력칸 */
+.sg{position:relative;display:inline-flex}
+.sg input{border-top-right-radius:0;border-bottom-right-radius:0}
+.sg button{border-top-left-radius:0;border-bottom-left-radius:0;border-left:0;padding:6px 8px}
+.sg-pop{position:fixed;z-index:80;background:#fff;border:1px solid #9aa6b8;border-radius:6px;box-shadow:0 6px 20px rgba(0,0,0,.2);max-height:60vh;overflow:auto;min-width:200px}
+.sg-pop div{padding:6px 10px;cursor:pointer;white-space:nowrap}
+.sg-pop div.on,.sg-pop div:hover{background:#e3efff}
+/* 일괄등록 */
+.qf{background:#fff7e6;border:1px solid #f0c36d;border-radius:6px;padding:8px;display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.qf .t{font-weight:bold;color:#c55a11}
+.lg{display:flex;gap:6px;flex-wrap:wrap;font-size:12px}
+.lg span{border:1px solid #888;padding:1px 6px;border-radius:3px}
+.bt{display:flex;flex-direction:column;gap:8px;height:100%}
+.bt .tbox{min-height:200px}
+.small{width:70px}
+.tiny{width:52px}
+@media (max-width:820px){
+  .wrap{padding:8px;height:auto}
+  .tbox{min-height:60vh;max-height:70vh}
+  .bar .sp{display:none}
+  .act button{flex:1 1 46%}
+  .bar.filters input[type=text]{flex:1 1 120px}
+  .f-date{width:130px}
+  .dlg{max-height:100vh;border-radius:0}
+  .ov{padding:0}
+  .dlg.wide,.dlg.mid,.dlg{max-width:100%;height:100%}
+  .form{grid-template-columns:1fr}
+  .form .note{grid-column:1}
+  .bt .tbox{min-height:45vh}
+  .bt .info .l1{display:none}
+  .top h1{font-size:14px}
+}
+</style>
+</head>
+<body>
+<div class="top">
+  <h1>태진다이텍 MES · ③ 작업지시 관리</h1>
+  <span id="db" title="MES 접속 상태"><span class="dot"></span><span id="dbt">확인 중</span></span>
+  <span class="who">작업자 <input id="who" type="text" placeholder="이름" maxlength="20"></span>
+</div>
+<div class="wrap" id="main">
+  <div class="info">
+    <b class="t">작업지시 새로 만들기 · 고치기 · 확인 · 잘못 낸 것 삭제</b>
+    <div class="l1"><span class="red">빨강</span> = 금형 없음(*) · <b style="color:#a07800">노랑</b> = 품번의 금형과 다름 · <b style="color:#2b6cb0">하늘</b> = 같은 날 중복. 실적이 있는 작업지시는 삭제할 수 없습니다.</div>
+    <div class="l2">새로: [최근 작업지시 불러오기] 호기별 최근 품번 / [여러 건 일괄등록] 설비명·품번·수량만 &nbsp;/&nbsp; 고치기: [MES에서 조회] → 줄 더블클릭 → [수정 저장] &nbsp;/&nbsp; 삭제: [수정 모드] → [선택 줄 삭제]</div>
+  </div>
+
+  <div class="bar filters">
+    <span>지시일</span><input id="d1" type="date" class="f-date">
+    <span>~</span><input id="d2" type="date" class="f-date">
+    <span>설비</span><input id="fmc" type="text" style="width:80px">
+    <span>품번/품명</span><input id="fit" type="text" style="width:140px">
+    <label class="chk"><input id="fnm" type="checkbox"> 금형 없음(*)만</label>
+    <button class="b-blue" id="bFetch">MES에서 조회</button>
+    <span>표에서 찾기</span><input id="fq" type="text" style="width:130px">
+    <span class="sp"></span>
+    <button class="b-teal" id="bXls">엑셀로 저장</button>
+  </div>
+
+  <div class="bar act">
+    <button class="b-orange b-big" id="bRecent">최근 작업지시 불러오기</button>
+    <button class="b-green b-big" id="bBatch">여러 건 일괄등록</button>
+    <button class="b-blue b-big" id="bEdit">선택 작업지시 고치기</button>
+    <span class="sep"></span>
+    <label class="chk" id="modeBox"><input id="mode" type="checkbox"> 수정 모드</label>
+    <span class="sp"></span>
+    <button class="b-red b-big" id="bDel">선택 줄 삭제</button>
+    <button class="b-big" id="bDetail">선택 줄 세로로 보기</button>
+    <button class="b-green b-big" id="bSave">수정 저장 (0)</button>
+    <button class="b-big" id="bCancel">수정 취소</button>
+  </div>
+  <div class="legend">빨강 = 금형 없음(*) &nbsp; 노랑 = 금형이 지금 품번 연결과 다름 &nbsp; 하늘 = 같은 날·설비·품번 여러 건 &nbsp;|&nbsp; 줄 더블클릭 = 고치기 창 &nbsp;(표에서 칸을 직접 고치려면 [수정 모드] → 칸 더블클릭)</div>
+
+  <div class="tbox" id="gbox"><div class="empty">[MES에서 조회]를 누르세요.</div></div>
+  <div class="status" id="status"></div>
+</div>
+<div class="busy" id="busy"><div id="busyT">처리 중...</div></div>
+
+<script>
+"use strict";
+/* ============================================================
+   공통 도구
+   ============================================================ */
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const KB = 3;                                            // 한글 1자 = 3byte (MES 설정과 같음)
+const blen = s => [...s].reduce((n, ch) => n + (ch.charCodeAt(0) < 128 ? 1 : KB), 0);
+const pad = n => String(n).padStart(2, "0");
+const ymd = d => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+const today = () => ymd(new Date());
+const LS = {get(k, d){try{return localStorage.getItem(k) ?? d}catch(e){return d}}, set(k, v){try{localStorage.setItem(k, v)}catch(e){}}};
+
+let busyN = 0;
+function busy(on, text){
+  busyN = Math.max(0, busyN + (on ? 1 : -1));
+  if (text) $("#busyT").textContent = text;
+  $("#busy").classList.toggle("on", busyN > 0);
+}
+
+let PIN = "";
+try { PIN = sessionStorage.getItem("pin") || ""; } catch(e) {}
+
+async function api(path, body, text){
+  busy(true, text || "MES와 주고받는 중...");
+  try {
+    const r = await fetch(path, {method: "POST", headers: {"Content-Type": "application/json",
+      "X-User": encodeURIComponent($("#who").value.trim()), "X-Pin": PIN}, body: JSON.stringify(body || {})});
+    if (path === "/api/wo/export" && r.ok) return r;
+    let j = {};
+    try { j = await r.json(); } catch(e) { j = {error: `서버 응답 오류 (${r.status})`}; }
+    if (r.status === 401 && j.pin) {
+      busy(false);
+      const p = await ask("PIN 입력", "접속 PIN을 넣으세요.", "", "password");
+      if (p === null) throw Object.assign(new Error("PIN이 필요합니다."), {kind: "warn"});
+      PIN = p; try { sessionStorage.setItem("pin", p); } catch(e) {}
+      busy(true);
+      return await api(path, body, text);
+    }
+    if (!r.ok || j.error && !("rows" in j)) throw Object.assign(new Error(j.error || `오류 ${r.status}`), {kind: j.kind});
+    return j;
+  } catch (e) {
+    if (e instanceof TypeError) throw new Error("서버에 연결할 수 없습니다.\n서버 PC가 켜져 있고 server.py 창이 열려 있는지 확인하세요.");
+    throw e;
+  } finally { busy(false); }
+}
+
+/* ---------- 창 (알림·확인·입력) ---------- */
+function dialog({title, html, buttons, cls, onOpen}){
+  return new Promise(res => {
+    const ov = document.createElement("div");
+    ov.className = "ov";
+    ov.innerHTML = `<div class="dlg ${cls || ""}"><h3>${esc(title)}</h3><div class="bd">${html}</div><div class="ft"></div></div>`;
+    const ft = ov.querySelector(".ft");
+    const close = v => { ov.remove(); document.removeEventListener("keydown", key); res(v); };
+    (buttons || [{t: "확인", v: true, c: "b-blue"}]).forEach(b => {
+      const el = document.createElement("button");
+      el.textContent = b.t; if (b.c) el.className = b.c;
+      el.onclick = () => { if (b.check && !b.check(ov)) return; close(b.get ? b.get(ov) : b.v); };
+      ft.appendChild(el);
+    });
+    const key = e => {                          // Esc = 첫 번째 버튼(취소·닫기)과 같음
+      if (!document.body.contains(ov) || ov !== [...document.querySelectorAll(".ov")].pop()) return;
+      if (e.key === "Escape") { e.stopPropagation(); ft.firstChild.click(); }
+    };
+    document.addEventListener("keydown", key);
+    document.body.appendChild(ov);
+    ov.close = close;
+    if (onOpen) onOpen(ov, close);
+    const f = ov.querySelector("input,textarea,select") || ft.lastChild;
+    if (f) setTimeout(() => f.focus(), 30);
+  });
+}
+const pre = t => `<pre>${esc(t)}</pre>`;
+const alertBox = (msg, title) => dialog({title: title || "알림", html: pre(msg)});
+const warnBox = msg => dialog({title: "확인하세요", html: `<pre class="red">${esc(msg)}</pre>`});
+const confirmBox = (msg, title, okText, danger) => dialog({title: title || "확인", html: pre(msg),
+  buttons: [{t: "취소", v: false}, {t: okText || "예", v: true, c: danger ? "b-red" : "b-blue"}]});
+function ask(title, msg, init, type){
+  return dialog({title, html: `${pre(msg)}<div style="margin-top:10px"><input type="${type || "text"}" id="askv" style="width:100%" value="${esc(init ?? "")}"></div>`,
+    buttons: [{t: "취소", v: null}, {t: "확인", c: "b-blue", get: ov => ov.querySelector("#askv").value}],
+    onOpen: (ov, close) => { const i = ov.querySelector("#askv"); i.select(); i.onkeydown = e => { if (e.key === "Enter") close(i.value); }; }});
+}
+function showErr(e){
+  const m = (e && e.message) || String(e);
+  return e && e.kind === "warn" ? warnBox(m) : dialog({title: "오류", html: `<pre class="red">${esc(m)}</pre>`});
+}
+
+/* ---------- 글자 치면 걸러지는 입력칸 (목록에서 고르기 + 직접 입력) ---------- */
+class Suggest {
+  constructor(input, {items = [], onPick, onChange, rows = 14} = {}){
+    this.inp = input; this.items = items; this.onPick = onPick; this.onChange = onChange; this.rows = rows;
+    this.pop = null; this.shown = []; this.hi = -1; this.last = input.value;
+    const w = document.createElement("span"); w.className = "sg";
+    input.parentNode.insertBefore(w, input); w.appendChild(input);
+    const b = document.createElement("button"); b.type = "button"; b.textContent = "▼"; b.tabIndex = -1;
+    w.appendChild(b);
+    b.onmousedown = e => e.preventDefault();
+    b.onclick = () => { if (this.pop) this.close(); else { this.open(""); this.inp.focus(); } };
+    input.addEventListener("input", () => {
+      const t = this.get();
+      if (t !== this.last) { this.last = t; this.onChange && this.onChange(t); }
+      this.open(t);
+    });
+    input.addEventListener("keydown", e => this.key(e));
+    input.addEventListener("blur", () => setTimeout(() => this.close(), 150));
+  }
+  get(){ return this.inp.value.trim(); }
+  set(v){ this.inp.value = v; this.last = v; }
+  setItems(items){ this.items = items; }
+  open(text){
+    const t = String(text || "").toUpperCase().replace(/\s/g, "");
+    this.shown = this.items.filter(([v, d]) => !t || String(v).toUpperCase().replace(/\s/g, "").includes(t)
+      || String(d).toUpperCase().replace(/\s/g, "").includes(t)).slice(0, 400);
+    if (!this.shown.length) return this.close();
+    if (!this.pop) {
+      this.pop = document.createElement("div"); this.pop.className = "sg-pop";
+      this.pop.onmousedown = e => e.preventDefault();
+      document.body.appendChild(this.pop);
+    }
+    this.hi = -1;
+    this.pop.innerHTML = this.shown.map(([v, d], i) => `<div data-i="${i}">${esc(d || v)}</div>`).join("");
+    this.pop.onclick = e => { const d = e.target.closest("div[data-i]"); if (d) this.pick(+d.dataset.i); };
+    const r = this.inp.parentNode.getBoundingClientRect();
+    const h = Math.min(this.rows * 29 + 4, window.innerHeight * .6);
+    const below = window.innerHeight - r.bottom - 8, above = r.top - 8;
+    this.pop.style.left = Math.max(4, Math.min(r.left, window.innerWidth - 260)) + "px";
+    this.pop.style.minWidth = r.width + "px";
+    this.pop.style.maxWidth = Math.min(700, window.innerWidth - 8) + "px";
+    if (below >= Math.min(h, 160) || below >= above) {       // 칸 아래에 (자리가 모자라면 위에)
+      this.pop.style.maxHeight = Math.min(h, below) + "px";
+      this.pop.style.top = r.bottom + 2 + "px";
+    } else {
+      const mh = Math.min(h, above);
+      this.pop.style.maxHeight = mh + "px";
+      this.pop.style.top = Math.max(4, r.top - Math.min(mh, this.pop.scrollHeight) - 2) + "px";
+    }
+  }
+  mark(i){
+    if (!this.pop) return;
+    const ds = this.pop.children;
+    if (ds[this.hi]) ds[this.hi].classList.remove("on");
+    this.hi = Math.max(0, Math.min(i, ds.length - 1));
+    if (ds[this.hi]) { ds[this.hi].classList.add("on"); ds[this.hi].scrollIntoView({block: "nearest"}); }
+  }
+  key(e){
+    if (e.key === "ArrowDown") { e.preventDefault(); if (!this.pop) this.open(this.get()); this.mark(this.hi + 1); }
+    else if (e.key === "ArrowUp") { e.preventDefault(); this.mark(this.hi - 1); }
+    else if (e.key === "Escape" && this.pop) { e.stopPropagation(); this.close(); }
+    else if (e.key === "Enter" && this.pop) {
+      if (this.hi >= 0) { e.preventDefault(); e.stopPropagation(); this.pick(this.hi); }
+      else if (this.shown.length === 1) { e.preventDefault(); e.stopPropagation(); this.pick(0); }
+    }
+  }
+  pick(i){
+    const it = this.shown[i]; if (!it) return;
+    this.set(it[0]); this.close(); this.inp.focus();
+    this.onPick && this.onPick(it[0]);
+  }
+  close(){ if (this.pop) { this.pop.remove(); this.pop = null; } }
+}
+
+/* ============================================================
+   ③ 작업지시 표
+   ============================================================ */
+const G = {cols: [], heads: [], names: {}, defs: {}, rows: [], rids: [], tags: [], locked: {}, sensitive: {},
+           edits: new Map(), sel: new Set(), anchor: null, shown: 0, view: [], fetched: false, info: null};
+const PAGE = 400;
+const NUM_COLS = new Set(["PLAN_QTY", "ACTUAL_QTY", "PASS_QTY", "BAD_QTY", "INPUT_QTY", "ST_VALUE"]);
+
+function filters(){
+  return {d1: $("#d1").value, d2: $("#d2").value, mc: $("#fmc").value, item: $("#fit").value, nomold: $("#fnm").checked};
+}
+
+async function fetchGrid(askFirst = true){
+  if (askFirst && G.edits.size && !await confirmBox(`저장 안 한 수정 ${G.edits.size}줄이 있습니다.\n버리고 다시 조회할까요?`)) return;
+  if (!$("#d1").value || !$("#d2").value) return warnBox("지시일을 넣으세요.");
+  try {
+    const j = await api("/api/wo/search", filters(), "MES에서 조회 중...");
+    Object.assign(G, {cols: j.cols, heads: j.heads, names: j.names, defs: j.defs, rows: j.rows, rids: j.rids,
+      tags: j.tags, locked: j.locked, sensitive: j.sensitive, fetched: true, info: j});
+    G.edits.clear(); G.sel.clear(); G.anchor = null;
+    updSave(); render();
+  } catch (e) { showErr(e); }
+}
+
+function ci(c){ return G.cols.indexOf(c); }
+function cellVal(i, c){
+  const e = G.edits.get(G.rids[i]);
+  const k = G.cols[c];
+  return e && e.changes[k] ? e.changes[k].new : G.rows[i][c];
+}
+function label(i){
+  return ["WORK_ORDER_NO", "WORK_ORDER_DATE", "MACHINE_CODE"].filter(c => ci(c) >= 0).map(c => G.rows[i][ci(c)].trim()).join(" / ");
+}
+
+function render(){
+  const box = $("#gbox");
+  if (!G.fetched) return;
+  const q = $("#fq").value.trim().toLowerCase();
+  G.view = [];
+  for (let i = 0; i < G.rows.length; i++) {
+    if (q && !G.rows[i].some((v, c) => String(cellVal(i, c)).toLowerCase().includes(q))) continue;
+    G.view.push(i);
+  }
+  G.shown = Math.min(PAGE, G.view.length);
+  if (!G.rows.length) {
+    box.innerHTML = `<div class="empty">조건에 맞는 작업지시가 없습니다.</div>`;
+  } else {
+    const th = G.cols.map((c, k) => `<th title="${esc(c)}">${esc(G.heads[k])}</th>`).join("");
+    box.innerHTML = `<table class="g" id="grid"><thead><tr><th class="ck"><input type="checkbox" id="ckAll" title="보이는 줄 모두 선택"></th>${th}</tr></thead><tbody></tbody></table><div class="more" id="more"></div>`;
+    appendRows(0, G.shown);
+    $("#ckAll").onchange = e => { G.sel.clear(); if (e.target.checked) G.view.forEach(i => G.sel.add(i)); refreshSel(); };
+  }
+  status(q);
+}
+function rowHtml(i){
+  const e = G.edits.get(G.rids[i]);
+  const tag = e ? "edit" : G.tags[i];
+  const tds = G.cols.map((c, k) => {
+    const chg = e && e.changes[c];
+    const v = chg ? chg.new : G.rows[i][k];
+    return `<td class="${chg ? "chg" : ""}${NUM_COLS.has(c) ? " num" : ""}" title="${esc(v)}">${esc(v)}</td>`;
+  }).join("");
+  return `<tr data-i="${i}" class="${tag || ""}${G.sel.has(i) ? " sel" : ""}"><td class="ck"><input type="checkbox"${G.sel.has(i) ? " checked" : ""}></td>${tds}</tr>`;
+}
+function appendRows(a, b){
+  const tb = $("#grid tbody");
+  tb.insertAdjacentHTML("beforeend", G.view.slice(a, b).map(rowHtml).join(""));
+  const more = $("#more");
+  const left = G.view.length - b;
+  more.innerHTML = left > 0 ? `<button id="bMore">더 보기 (${Math.min(PAGE, left).toLocaleString()}줄 더 / 남은 ${left.toLocaleString()}줄)</button>` : "";
+  if (left > 0) $("#bMore").onclick = () => { const s = G.shown; G.shown = Math.min(G.view.length, s + PAGE); appendRows(s, G.shown); };
+}
+function refreshRow(i){
+  const tr = document.querySelector(`#grid tr[data-i="${i}"]`);
+  if (tr) tr.outerHTML = rowHtml(i);
+}
+function refreshSel(){
+  document.querySelectorAll("#grid tbody tr").forEach(tr => {
+    const on = G.sel.has(+tr.dataset.i);
+    tr.classList.toggle("sel", on);
+    tr.querySelector("input").checked = on;
+  });
+}
+function status(q){
+  const j = G.info; if (!j) return;
+  let t = `조회 ${j.time}  ${G.rows.length.toLocaleString()}건`;
+  if (j.hit_limit) t += " (최대건수 도달 - 조건을 좁히세요)";
+  if (q) t += `  / 표에서 찾기 ${G.view.length.toLocaleString()}건`;
+  if (G.sel.size) t += `  / 선택 ${G.sel.size}줄`;
+  $("#status").innerHTML = esc(t) + (j.summary ? ` <span class="sum">※ ${esc(j.summary)}</span>` : "");
+}
+function updSave(){
+  let n = 0; G.edits.forEach(e => n += Object.keys(e.changes).length);
+  $("#bSave").textContent = `수정 저장 (${n})`;
+}
+
+/* 표 클릭: 선택 / 더블클릭: 고치기 창 또는 칸 고치기 */
+$("#gbox").addEventListener("click", e => {
+  const tr = e.target.closest("#grid tbody tr"); if (!tr) return;
+  const i = +tr.dataset.i;
+  if (e.target.closest("td.ck")) {
+    if (e.target.tagName !== "INPUT") return;
+    e.target.checked ? G.sel.add(i) : G.sel.delete(i);
+  } else if (e.shiftKey && G.anchor !== null) {
+    const a = G.view.indexOf(G.anchor), b = G.view.indexOf(i);
+    if (!e.ctrlKey && !e.metaKey) G.sel.clear();
+    G.view.slice(Math.min(a, b), Math.max(a, b) + 1).forEach(x => G.sel.add(x));
+  } else if (e.ctrlKey || e.metaKey) {
+    G.sel.has(i) ? G.sel.delete(i) : G.sel.add(i);
+    G.anchor = i;
+  } else {
+    G.sel.clear(); G.sel.add(i); G.anchor = i;
+  }
+  refreshSel(); status($("#fq").value.trim());
+});
+$("#gbox").addEventListener("dblclick", e => {
+  const td = e.target.closest("#grid tbody td"); if (!td || td.classList.contains("ck")) return;
+  const tr = td.parentNode, i = +tr.dataset.i;
+  const c = [...tr.children].indexOf(td) - 1;
+  window.getSelection && window.getSelection().removeAllRanges();
+  if (!$("#mode").checked) { G.sel.clear(); G.sel.add(i); refreshSel(); openForm(i); }
+  else editCell(i, c, td);
+});
+
+/* ---------- 수정 모드: 칸 고치기 ---------- */
+function block(col){
+  if (!$("#mode").checked) return "지금은 보기 전용입니다. 고치려면 [수정 모드]를 체크하세요.";
+  if (G.locked[col]) return G.locked[col];
+  const d = G.defs[col];
+  if (!d || !d.editable) return col.endsWith("__") ? "이 칸은 여기서 고칠 수 없습니다." : `${col} (${d ? d.dbtype : ""}) 형식은 고칠 수 없습니다.`;
+  return null;
+}
+async function confirmSens(col){
+  const m = G.sensitive[col];
+  return !m || await confirmBox(`[${G.heads[ci(col)]}]\n\n${m}\n\n그래도 고칠까요?`);
+}
+function normalize(d, text){
+  const t = String(text ?? "").trim();
+  if (!t) { if (d.req) throw new Error("필수 칸이라 비울 수 없음"); return ""; }
+  if (d.type === "NUM") {
+    const f = Number(t.replace(/,/g, ""));
+    if (!isFinite(f)) throw new Error("숫자 아님");
+    if (f < 0) throw new Error("음수는 넣을 수 없습니다");
+    return String(f);
+  }
+  if (d.type === "DATE") {
+    const m = t.replace(/[./]/g, "-").match(/^(\d{4})-(\d{1,2})-(\d{1,2})(?:\s+(\d{1,2}):(\d{2})(?::\d{2})?)?$/) ||
+              t.match(/^(\d{4})(\d{2})(\d{2})$/);
+    if (!m) throw new Error("날짜 아님 (예: 2026-09-30)");
+    const s = `${m[1]}-${pad(+m[2])}-${pad(+m[3])}`;
+    return m[4] && (+m[4] || +m[5]) ? `${s} ${pad(+m[4])}:${m[5]}` : s;
+  }
+  if (d.maxlen && blen(t) > d.maxlen) throw new Error(`너무 김 (${blen(t)}/${d.maxlen}byte)`);
+  return t;
+}
+function setEdit(i, col, text){
+  const d = G.defs[col], k = ci(col), old = G.rows[i][k], rid = G.rids[i];
+  let nv;
+  try { nv = normalize(d, text); } catch (e) { return `${G.heads[k]}: ${e.message}\n수정하지 않았습니다.`; }
+  const same = nv === old || (d.type === "NUM" && old !== "" && nv !== "" && Number(old) === Number(nv)) || (d.type === "TEXT" && old.trimEnd() === nv);
+  if (same) {
+    const e = G.edits.get(rid);
+    if (e) { delete e.changes[col]; if (!Object.keys(e.changes).length) G.edits.delete(rid); }
+  } else {
+    const e = G.edits.get(rid) || {label: label(i), i, changes: {}};
+    e.changes[col] = {old, new: nv};
+    G.edits.set(rid, e);
+  }
+  updSave();
+  return null;
+}
+async function editCell(i, c, td){
+  const col = G.cols[c];
+  const why = block(col);
+  if (why) return warnBox(why);
+  if (!await confirmSens(col)) return;
+  const cur = cellVal(i, c);
+  const inp = document.createElement("input");
+  inp.type = "text"; inp.value = cur;
+  inp.style.cssText = "width:100%;min-width:140px;padding:2px 4px";
+  td.textContent = ""; td.appendChild(inp); td.style.overflow = "visible";
+  inp.focus(); inp.select();
+  let done = false;
+  const finish = async commit => {
+    if (done) return; done = true;
+    if (commit) { const m = setEdit(i, col, inp.value); if (m) await warnBox(m); }
+    refreshRow(i);
+  };
+  inp.onkeydown = e => { if (e.key === "Enter") finish(true); if (e.key === "Escape") { e.stopPropagation(); finish(false); } };
+  inp.onblur = () => finish(true);
+}
+
+$("#mode").onchange = async e => {
+  if (e.target.checked) {
+    if (!await confirmBox("수정 모드를 켜면 MES의 작업지시 내용을 바꿀 수 있습니다.\n켤까요?")) e.target.checked = false;
+  }
+  $("#modeBox").classList.toggle("mode-on", e.target.checked);
+};
+
+async function saveGrid(){
+  if (!G.edits.size) return alertBox("수정한 내용이 없습니다.");
+  const lines = [];
+  G.edits.forEach(e => Object.entries(e.changes).forEach(([c, x]) => lines.push(`${e.label} · ${G.heads[ci(c)]}: '${x.old}' → '${x.new}'`)));
+  const more = lines.length > 25 ? `\n... 외 ${lines.length - 25}건` : "";
+  if (!await confirmBox("MES 작업지시에 바로 반영합니다.\n\n" + lines.slice(0, 25).join("\n") + more + "\n\n계속할까요?", "MES 수정", "저장")) return false;
+  const edits = [...G.edits.entries()].map(([rid, e]) => ({rid, changes: e.changes}));
+  try {
+    const j = await api("/api/wo/save_grid", {edits}, "MES에 저장 중...");
+    await alertBox(`${j.n}줄 수정 완료. (작업기록에 남겼습니다)`);
+    G.edits.clear(); updSave(); fetchGrid(false);
+    return true;
+  } catch (e) { showErr(e); return false; }
+}
+async function cancelEdits(){
+  if (G.edits.size && await confirmBox(`저장 안 한 수정 ${G.edits.size}줄을 되돌릴까요?`)) { G.edits.clear(); updSave(); render(); }
+}
+
+/* ---------- 선택 줄 세로로 보기 ---------- */
+function oneSel(msg){
+  if (G.sel.size !== 1) { alertBox(msg || "한 줄을 선택하세요."); return null; }
+  return [...G.sel][0];
+}
+function detail(){
+  const i = oneSel(); if (i === null) return;
+  const html = `<div class="hint" style="margin-bottom:6px">${$("#mode").checked ? "값을 누르면 수정 → 주황 = 저장 대기. [수정 저장]을 눌러야 MES에 반영됩니다." : "보기 전용 (고치려면 [수정 모드] 체크)"}</div>
+    <input type="text" id="dq" placeholder="컬럼 찾기" style="width:220px;margin-bottom:6px">
+    <div class="tbox" style="max-height:60vh"><table class="g" id="dt"><thead><tr><th>DB컬럼</th><th>이름</th><th>값</th><th>형식</th></tr></thead><tbody></tbody></table></div>`;
+  dialog({title: `작업지시 - ${label(i)}`, html, cls: "mid",
+    buttons: [{t: "닫기", v: null}, {t: "수정 저장", c: "b-green", v: "save"}],
+    onOpen: ov => {
+      const fill = () => {
+        const q = ov.querySelector("#dq").value.trim().toLowerCase();
+        const e = G.edits.get(G.rids[i]);
+        ov.querySelector("#dt tbody").innerHTML = G.cols.map((c, k) => {
+          const nm = G.names[c] || "", v = cellVal(i, k), d = G.defs[c] || {};
+          if (q && !c.toLowerCase().includes(q) && !nm.toLowerCase().includes(q) && !String(v).toLowerCase().includes(q)) return "";
+          const cls = e && e.changes[c] ? "edit" : "";
+          return `<tr class="${cls}" data-c="${esc(c)}"><td>${esc(c)}</td><td>${esc(nm)}</td><td class="${cls ? "chg" : ""}" style="max-width:420px;white-space:normal">${esc(v)}</td><td>${esc((d.dbtype || "") + (d.req ? " 필수" : ""))}</td></tr>`;
+        }).join("");
+      };
+      ov.querySelector("#dq").oninput = fill;
+      ov.querySelector("#dt").onclick = async ev => {
+        const tr = ev.target.closest("tr[data-c]"); if (!tr) return;
+        const col = tr.dataset.c, why = block(col);
+        if (why) return warnBox(why);
+        if (!await confirmSens(col)) return;
+        const v = await ask(col, `${G.heads[ci(col)]}\n새 값을 입력하세요:`, cellVal(i, ci(col)));
+        if (v === null) return;
+        const m = setEdit(i, col, v); if (m) await warnBox(m);
+        fill(); refreshRow(i);
+      };
+      fill();
+    }}).then(v => { if (v === "save") saveGrid(); });
+}
+
+/* ---------- 선택 줄 삭제 ---------- */
+async function deleteRows(){
+  if (!$("#mode").checked) return alertBox("삭제는 [수정 모드]를 체크해야 할 수 있습니다.");
+  if (G.edits.size) return alertBox("저장 안 한 수정이 있습니다. 먼저 [수정 저장] 또는 [수정 취소]를 하세요.");
+  const sel = [...G.sel];
+  if (!sel.length) return alertBox("삭제할 줄을 선택하세요. (왼쪽 네모 체크, 또는 Ctrl/Shift+클릭)");
+  const rids = sel.map(i => G.rids[i]);
+  try {
+    const j = await api("/api/wo/delete_check", {rids}, "실적·사용 이력 확인 중... (오래 걸릴 수 있음)");
+    if (j.blocked.length) return warnBox("아래 줄은 삭제할 수 없습니다:\n\n" + j.blocked.slice(0, 15).join("\n"));
+    const lines = j.lines.slice(0, 20).map(x => "  " + x).join("\n") + (j.lines.length > 20 ? `\n  ... 외 ${j.lines.length - 20}줄` : "");
+    let typed = "";
+    if (j.used.length) {
+      typed = await ask("삭제 확인", `삭제할 줄:\n${lines}\n\n※ 다른 테이블에 연결된 기록이 있습니다:\n${j.used.slice(0, 15).map(x => "  " + x).join("\n")}\n\n그래도 지우려면 '삭제'라고 입력하세요:`, "");
+      if ((typed || "").trim() !== "삭제") return;
+    } else if (!await confirmBox(`MES 작업지시에서 아래 ${rids.length}줄을 삭제합니다.\n\n${lines}\n\n삭제한 내용은 서버의 백업 파일에 저장됩니다. 계속할까요?`, "줄 삭제", "삭제", true)) return;
+    const r = await api("/api/wo/delete", {rids, used: j.used.length > 0, typed}, "삭제 중...");
+    await alertBox(`${r.n}줄 삭제 완료. (서버에 백업했습니다)`);
+    fetchGrid(false);
+  } catch (e) { showErr(e); }
+}
+
+/* ---------- 엑셀로 저장 ---------- */
+async function exportXls(){
+  if (!G.fetched) return alertBox("먼저 [MES에서 조회]를 하세요.");
+  try {
+    const r = await api("/api/wo/export", filters(), "엑셀 만드는 중...");
+    const blob = await r.blob();
+    const cd = r.headers.get("Content-Disposition") || "";
+    const m = cd.match(/filename\*=UTF-8''([^;]+)/);
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = m ? decodeURIComponent(m[1]) : "작업지시.xlsx";
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 5000);
+  } catch (e) { showErr(e); }
+}
+
+/* ============================================================
+   작업지시 고치기 창 (기존 WoForm)
+   ============================================================ */
+async function openForm(i){
+  if (i === undefined) { i = oneSel("고칠 작업지시 1줄을 선택하세요. (먼저 [MES에서 조회])"); if (i === null) return; }
+  if (G.edits.size) return alertBox("표에서 고친 뒤 저장 안 한 내용이 있습니다. 먼저 [수정 저장] 또는 [수정 취소]를 하세요.");
+  const rid = G.rids[i];
+  let F;
+  try { F = await api("/api/wo/form", {rid}, "작업지시 읽는 중..."); } catch (e) { return showErr(e); }
+  const o = F.row;
+  const mcList = F.machines.map(([a, b]) => [a, b ? `${a} | ${b}` : a]);
+  const mc0 = o.MACHINE_CODE || "";
+  const doneTxt = Object.keys(F.done).length ? "실적 있음: " + Object.entries(F.done).map(([c, v]) => `${c}=${v}`).join(", ") : "실적 없음";
+  const st = (c, lab) => o.hasOwnProperty(c) ? `<span class="lab">${lab}</span><input type="text" id="f_${c}" list="l_${c}" value="${esc(o[c])}" style="width:140px">
+      <datalist id="l_${c}">${(F.status[c] || []).map(x => `<option value="${esc(x)}">`).join("")}</datalist>
+      <span class="note">바꾸면 현장 화면에서 보이거나 사라질 수 있음</span>` : "";
+  const html = `<div class="info" style="margin-bottom:12px"><div class="l1">바꿀 칸만 고치고 [수정 저장]. 바뀐 칸만 저장하며, 그 사이 다른 곳에서 바뀌었으면 저장하지 않습니다.<br>품번을 바꾸면 금형이, 설비를 바꾸면 설비명이 MES에서 자동으로 바뀝니다.</div></div>
+    <div class="form">
+      <span class="lab">지시일</span><input type="date" id="f_date" value="${esc((o.WORK_ORDER_DATE || "").slice(0, 10))}" style="width:160px">
+      ${F.has_shift ? `<span class="lab">근무조</span><input type="text" id="f_shift" list="l_shift" value="${esc(o.WORK_SHIFT || "")}" style="width:90px"><datalist id="l_shift">${F.shifts.map(x => `<option value="${esc(x)}">`).join("")}</datalist>` : ""}
+      <span class="lab">품번</span><span style="display:flex;gap:6px;flex-wrap:wrap"><input type="text" id="f_item" value="${esc(o.ITEM_CODE || "")}" style="width:200px"><button type="button" id="f_find">품번 찾기</button></span>
+      <span class="note" id="f_itemInfo"></span>
+      <span class="lab">설비</span><span><input type="text" id="f_mc" style="width:260px"></span>
+      <span class="note">목록에서 고르거나 설비코드 입력</span>
+      <span class="lab">계획수량</span><input type="text" id="f_qty" inputmode="numeric" value="${esc(o.PLAN_QTY || "")}" style="width:120px">
+      ${st("WORK_ORDER_STATUS", "상태")}${st("PLAN_STATUS", "계획상태")}
+      <span class="lab">작업지시번호</span><input type="text" value="${esc(o.WORK_ORDER_NO || "")}" readonly style="width:200px;background:#f1f3f6">
+      <span class="note">번호는 실적과 연결되어 바꿀 수 없습니다</span>
+    </div>
+    <div style="margin-top:12px" class="${Object.keys(F.done).length ? "red" : "hint"}">금형: ${esc(o.MOLD_CODE || "")} &nbsp; 설비명: ${esc(o.MACHINE_NAME || "")} &nbsp; ${esc(doneTxt)}</div>`;
+  const values = ov => {
+    const v = {WORK_ORDER_DATE: ov.querySelector("#f_date").value, ITEM_CODE: ov.querySelector("#f_item").value,
+      MACHINE_CODE: ov.querySelector("#f_mc").value.split(" | ")[0].trim(), PLAN_QTY: ov.querySelector("#f_qty").value};
+    if (F.has_shift) v.WORK_SHIFT = ov.querySelector("#f_shift").value;
+    ["WORK_ORDER_STATUS", "PLAN_STATUS"].forEach(c => { const el = ov.querySelector("#f_" + c); if (el) v[c] = el.value; });
+    return v;
+  };
+  dialog({title: `작업지시 고치기 - ${o.WORK_ORDER_NO || ""}`, html, cls: "mid",
+    buttons: [{t: "닫기", v: null}, {t: "수정 저장", c: "b-green b-big", v: "save", check: ov => { saveForm(ov); return false; }}],
+    onOpen: ov => {
+      const mcInp = ov.querySelector("#f_mc");
+      mcInp.value = (mcList.find(x => x[0] === mc0) || [0, mc0])[1];
+      new Suggest(mcInp, {items: mcList.map(([a, d]) => [d, d]), rows: 16});
+      const lookup = async quiet => {
+        const it = ov.querySelector("#f_item").value.trim(), n = ov.querySelector("#f_itemInfo");
+        if (!it) { n.textContent = ""; return; }
+        try {
+          const j = await api("/api/item/lookup", {item: it}, "품번 확인 중...");
+          if (!j.n) { n.textContent = `품목 마스터에 없는 품번입니다: ${it}`; n.className = "note bad"; return; }
+          const parts = [`품명: ${j.name}`, j.mold ? `금형: ${j.mold} (자동으로 들어감)` : "금형 연결 없음 → 금형이 '*'로 들어갑니다. [① 금형·품번 관리]에서 먼저 연결하세요"];
+          if (j.last_mc) parts.push(`최근 설비: ${j.last_mc}`);
+          n.textContent = parts.join("   "); n.className = "note " + (j.mold ? "good" : "bad");
+        } catch (e) { if (!quiet) showErr(e); }
+      };
+      const it = ov.querySelector("#f_item");
+      it.onkeydown = e => { if (e.key === "Enter") lookup(); };
+      it.onchange = () => lookup(true);
+      ov.querySelector("#f_find").onclick = async () => { const v = await findItem(it.value); if (v !== null) { it.value = v; lookup(); } };
+      lookup(true);
+    }});
+
+  async function saveForm(ov){
+    const v = values(ov);
+    try {
+      const p = await api("/api/wo/form_save", {rid, values: v, stamp: o, confirm: false}, "바뀔 내용 확인 중...");
+      let msg = `작업지시 ${p.no}를 아래처럼 고칩니다.\n\n` + p.lines.map(x => `  ${x.name}: ${x.old || "(빈칸)"} → ${x.new || "(빈칸)"}`).join("\n");
+      if (p.warn.length) msg += "\n\n※ 확인하세요:\n  " + p.warn.join("\n  ");
+      if (!await confirmBox(msg + "\n\n저장할까요?", "작업지시 수정", "저장", p.warn.length > 0)) return;
+      const r = await api("/api/wo/form_save", {rid, values: v, stamp: o, confirm: true}, "MES에 저장 중...");
+      ov.close(null);
+      await alertBox(`저장했습니다: ${r.no}\n\n금형: ${r.mold}   설비명: ${r.mname}`);
+      fetchGrid(false);
+    } catch (e) { showErr(e); }
+  }
+}
+
+async function findItem(q){
+  let j;
+  try { j = await api("/api/item/find", {q}, "품번 찾는 중..."); } catch (e) { showErr(e); return null; }
+  return dialog({title: "품번 찾기 (누르면 선택)", cls: "mid",
+    html: `<input type="text" id="fiq" value="${esc(q)}" placeholder="거르기" style="width:100%;margin-bottom:6px">
+      <div class="list" id="fil"></div><div class="hint" style="margin-top:6px">${j.rows.length}건 (최대 300) &nbsp; 노랑 = 금형 연결 없음</div>`,
+    buttons: [{t: "닫기", v: null}],
+    onOpen: (ov, close) => {
+      const fill = () => {
+        const t = ov.querySelector("#fiq").value.trim().toUpperCase();
+        ov.querySelector("#fil").innerHTML = j.rows.filter(r => !t || (r[0] + " " + r[1]).toUpperCase().includes(t))
+          .map(r => `<div data-v="${esc(r[0])}" class="${r[2] ? "" : "w"}"><b>${esc(r[0])}</b> &nbsp; ${esc(r[1])} &nbsp; <span class="hint">금형 ${esc(r[2] || "(없음)")}</span></div>`).join("");
+      };
+      ov.querySelector("#fiq").oninput = fill;
+      ov.querySelector("#fil").onclick = e => { const d = e.target.closest("div[data-v]"); if (d) close(d.dataset.v); };
+      fill();
+    }});
+}
+
+/* ============================================================
+   최근 작업지시 불러오기 (날짜 → 근무시간 → 일괄등록 창)
+   ============================================================ */
+const hoursText = h => h == 8 ? "정상 8시간" : (h == 10 ? "잔업까지 10시간" : `${h}시간 (직접 입력)`);
+async function openRecent(){
+  const d = await dialog({title: "최근 작업지시 불러오기 - 기본 계획일자 선택",
+    html: `<b style="font-size:15px">적용할 작업일자를 선택하세요</b><div class="hint" style="margin:6px 0 12px">최근 30일의 호기별 최종 작업지시를 불러온 뒤<br>아래 날짜를 새 작업지시의 기본 계획일자로 사용합니다.</div>
+      <b>기본 계획일자</b> &nbsp;<input type="date" id="rd" value="${today()}">`,
+    buttons: [{t: "취소", v: null}, {t: "다음", c: "b-blue b-big", get: ov => ov.querySelector("#rd").value}]});
+  if (!d) return;
+  const h = await dialog({title: "최근 작업지시 불러오기 - 근무 기준 선택",
+    html: `<div style="color:var(--title);font-weight:bold">계획일자 ${esc(d)}</div><b style="font-size:15px">어느 근무시간까지 작업지시를 만들까요?</b>
+      <div class="hint" style="margin:6px 0 12px">선택한 시간 기준으로 최근 SPM × 근무시간 × 캐비티를 계산해<br>계획수량을 미리 배분합니다. 아직 MES에는 등록되지 않습니다.</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="b-blue b-big" data-h="8" style="flex:1">정상까지 (8시간)</button><button class="b-orange b-big" data-h="10" style="flex:1">잔업까지 (10시간)</button></div>
+      <div style="margin-top:12px"><b>직접 입력</b> &nbsp;<input type="text" id="rh" inputmode="decimal" class="small"> 시간 &nbsp;<button id="rhb">이 시간으로</button></div>`,
+    buttons: [{t: "취소", v: null}],
+    onOpen: (ov, close) => {
+      ov.querySelectorAll("button[data-h]").forEach(b => b.onclick = () => close(+b.dataset.h));
+      const man = () => {
+        const v = parseFloat(ov.querySelector("#rh").value.replace(/,/g, ""));
+        if (!(v > 0 && v <= 24)) return warnBox("근무시간은 0보다 크고 24 이하인 숫자로 넣으세요. (예: 9, 11.5)");
+        close(v);
+      };
+      ov.querySelector("#rhb").onclick = man;
+      ov.querySelector("#rh").onkeydown = e => { if (e.key === "Enter") man(); };
+    }});
+  if (h) openBatch(h, d);
+}
+
+/* ============================================================
+   여러 건 일괄등록 (기존 WoBatch)
+   ============================================================ */
+const BCOLS = ["No", "설비(입력)", "계획일자", "교대조", "품번", "계획수량", "순위", "설비코드", "품명", "금형", "작업지시번호", "상태", "최근작업일", "최근SPM"];
+let L = null;                                   // 설비·품번 목록 (한 번 읽으면 계속 씀)
+
+function parseLooseDate(t){
+  t = String(t || "").trim().split(" ")[0];
+  if (!t) return null;
+  let m;
+  if ((m = t.match(/^(\d{1,2})[/.-](\d{1,2})$/))) return `${new Date().getFullYear()}-${pad(+m[1])}-${pad(+m[2])}`;
+  if (/^\d{5}(\.0)?$/.test(t)) { const d = new Date(Date.UTC(1899, 11, 30) + parseInt(t) * 864e5); return d.toISOString().slice(0, 10); }
+  if ((m = t.match(/^(\d{4})(\d{2})(\d{2})$/)) || (m = t.match(/^(\d{4})\D(\d{1,2})\D(\d{1,2})$/))) return `${m[1]}-${pad(+m[2])}-${pad(+m[3])}`;
+  return null;
+}
+
+async function openBatch(recentHours, recentDate){
+  if (!L) {
+    try {
+      const j = await api("/api/batch/lists", {}, "설비·품번 목록 읽는 중...");
+      const machines = j.machines;
+      L = {machines, mc_items: j.mc_items, item_mcs: j.item_mcs, item_names: {}, item_last: {}};
+      L.mc_all = Object.entries(machines).map(([c, n]) => [n || c, `${n || c}   (${c})`]).sort((a, b) => a[0].localeCompare(b[0], "ko"));
+      L.item_list = j.items.map(([k, nm, mc]) => {
+        L.item_names[k] = nm; if (mc) L.item_last[k.toUpperCase()] = mc;
+        const mn = machines[mc] || mc;
+        return [k, `${k}   |  ${nm || "-"}` + (mn ? `   |  최근 ${mn}` : "")];
+      });
+    } catch (e) {
+      await warnBox("설비·품번 목록을 읽지 못했습니다 (직접 입력은 됩니다).\n" + e.message);
+      L = null;
+    }
+  }
+  const LL = L || {machines: {}, mc_items: {}, item_mcs: {}, item_names: {}, item_last: {}, mc_all: [], item_list: []};
+  const B = {rows: [], checked: false, sort: null, rev: false, sel: new Set(), hours: recentHours || null, spm: [null, 1, ""]};
+  const recent = !!recentHours;
+  const plan = recentDate || today();
+  const head = recent
+    ? `<b class="t">최근 30일 작업지시 불러오기 - 계획일자 ${esc(plan)} / ${esc(hoursText(recentHours))} 기준 (아직 MES 미등록)</b>
+       <div class="l1">최근 30일 작업지시에서 호기마다 마지막 1건(품번)을 불러옵니다. 계획수량 = SPM(SPM 관리 값, 없으면 최근 생산 기록) × 60 × 근무시간 × 캐비티<br>
+       필요 없는 줄 = [선택 줄 빼기], 바꿀 줄 = [선택 줄 수정] 또는 칸 더블클릭. [작업지시 반영]을 누르기 전까지 MES는 바뀌지 않습니다.<br>
+       순서: 고치기·빼기 → [검사] → [W/O 번호생성] → 번호·상태 확인 → [작업지시 반영]</div>`
+    : `<b class="t">작업지시 여러 건 일괄등록 - 설비명·품번·계획수량만 넣으면 됩니다 (MES 작업지시일괄처리와 같은 방식)</b>
+       <div class="l1">[빠른 입력]: 설비 고르기 → 그 설비에서 최근 2년 만든 품번 목록 → 품번 고르면 SPM × 근무시간으로 수량 자동 → Enter = 추가<br>
+       엑셀에서 설비명·품번·수량 3칸(또는 MES 양식: 라인·계획일자·교대조·품목코드·계획수량·순위)을 복사해 이 화면에서 Ctrl+V 해도 됩니다.<br>
+       → [검사] → [W/O 번호생성] → [작업지시 반영]. 칸 더블클릭 = 고치기</div>`;
+  const html = `<div class="bt">
+    <div class="info">${head}
+      <div class="lg" style="margin-top:6px"><b>행 색상 ([검사] 후):</b><span style="background:var(--ok)">초록 = 정상</span><span style="background:var(--dup)">하늘 = 같은 날 이 품번 작업지시가 이미 있음</span><span style="background:var(--warn)">노랑 = 확인 필요 (금형 연결 없음 / 소재중량 없음 / 표 안 중복)</span><span style="background:var(--err)">빨강 = 오류, 반영 안 됨</span></div></div>
+    <div class="bar"><b>기본 계획일자</b><input type="date" id="b_def" value="${esc(plan)}"><b>기본 교대조</b><input type="text" id="b_shift" list="b_shl" value="1" class="tiny"><datalist id="b_shl"><option value="1"><option value="2"><option value="3"></datalist></div>
+    <div class="qf"><span class="t">빠른 입력</span>
+      <span>설비</span><input type="text" id="q_mc" style="width:120px">
+      <label class="chk"><input type="checkbox" id="q_allmc"> 전체 설비</label>
+      <label class="chk"><input type="checkbox" id="q_allit"> 전체 품번</label>
+      <span>품번</span><input type="text" id="q_it" style="width:170px">
+      <span>근무</span>
+      <label class="chk"><input type="radio" name="q_h" value="8"${recent ? " disabled" : ""}> 정상 8h</label>
+      <label class="chk"><input type="radio" name="q_h" value="10"${recent ? " disabled" : ""}> 잔업 10h</label>
+      <span>직접</span><input type="text" id="q_hman" class="tiny" inputmode="decimal"${recent ? " disabled" : ""}><span>h</span>
+      <span>SPM</span><input type="text" id="q_spm" class="tiny" inputmode="decimal"><span class="hint" id="q_src"></span>
+      <span>수량</span><input type="text" id="q_qty" class="small" inputmode="numeric">
+      <button class="b-orange" id="q_add">+ 추가</button><button id="q_reset">↺ 처음부터</button>
+    </div>
+    <div class="bar">
+      <button id="b_paste">붙여넣기 (Ctrl+V)</button><button id="b_editsel">선택 줄 수정</button><button id="b_delsel">선택 줄 빼기</button><button id="b_clear">모두 비우기</button>
+      <span class="sp"></span>
+      <button class="b-blue b-big" id="b_check">검사</button><button class="b-blue b-big" id="b_no">W/O 번호생성</button><button class="b-green b-big" id="b_apply">작업지시 반영</button>
+    </div>
+    <div class="tbox" id="b_box"></div>
+    <div class="status" id="b_lbl">엑셀에서 복사한 뒤 이 화면을 누르고 Ctrl+V 를 누르세요.</div>
+  </div>`;
+
+  dialog({title: recent ? "최근 30일 작업지시 - 등록 예정" : "작업지시 여러 건 일괄등록", html, cls: "wide",
+    buttons: [{t: "닫기", v: null, check: () => !B.rows.length || B.applied || confirm("등록 예정 목록이 있습니다. 닫을까요? (MES에는 아직 안 들어갔습니다)")}],
+    onOpen: ov => setup(ov)});
+
+  function setup(ov){
+    const q = s => ov.querySelector(s);
+    const lbl = t => q("#b_lbl").textContent = t;
+    const defDate = () => q("#b_def").value, defShift = () => q("#b_shift").value.trim();
+    const hRadios = [...ov.querySelectorAll("input[name=q_h]")];
+    const hours = () => {
+      const man = parseFloat(q("#q_hman").value.replace(/,/g, ""));
+      if (man > 0 && man <= 24) return man;
+      const r = hRadios.find(x => x.checked);
+      return r ? +r.value : (B.hours || 8);
+    };
+    if (recent) { if (recentHours == 8 || recentHours == 10) hRadios.find(x => +x.value === recentHours).checked = true; else q("#q_hman").value = recentHours; }
+    else hRadios[0].checked = true;
+
+    /* ----- 빠른 입력 ----- */
+    const fm = new Suggest(q("#q_mc"), {items: LL.mc_all, rows: 30, onPick: onMcPick, onChange: () => { if (!curMc()) fi.setItems(LL.item_list); }});
+    const fi = new Suggest(q("#q_it"), {items: LL.item_list, onPick: onItemPick, onChange: () => fm.setItems(LL.mc_all)});
+    function curMc(){
+      const t = fm.get();
+      if (LL.machines.hasOwnProperty(t)) return t;
+      const n = t.replace(/\s/g, "").toUpperCase();
+      for (const [c, nm] of Object.entries(LL.machines)) if (nm && nm.replace(/\s/g, "").toUpperCase() === n) return c;
+      return "";
+    }
+    function refreshMachines(item){
+      item = (item === undefined ? fi.get() : item).toUpperCase();
+      const hist = item ? LL.item_mcs[item] : null;
+      if (q("#q_allmc").checked || !hist) { fm.setItems(LL.mc_all); return []; }
+      fm.setItems(hist.map(([mc, n, last]) => { const nm = LL.machines[mc] || mc; return [nm, `${nm}   (${mc})   |  ${n}회` + (last ? `, 마지막 ${last.slice(2, 10).replace(/-/g, "/")}` : "")]; }));
+      return hist;
+    }
+    function refreshItems(){
+      const mc = curMc();
+      if (q("#q_allit").checked || !mc || !LL.mc_items[mc]) { fi.setItems(LL.item_list); return; }
+      fi.setItems(LL.mc_items[mc].map(([it, n, last]) => [it, `${it}   |  ${LL.item_names[it] || "-"}   |  ${n}회` + (last ? `, 마지막 ${last.slice(5, 10).replace("-", "/")}` : "")]));
+    }
+    function onMcPick(){
+      refreshItems();
+      const it = fi.get().toUpperCase(), mc = curMc();
+      if (it && mc && (LL.item_mcs[it] || []).some(x => x[0] === mc)) return updateSpm(it);
+      fi.set(""); refreshMachines(""); q("#q_it").focus(); fi.open("");
+    }
+    function onItemPick(item){
+      item = item.toUpperCase();
+      const hist = refreshMachines(item);
+      const mc = curMc();
+      if (hist.length && !q("#q_allmc").checked && !hist.some(x => x[0] === mc)) fm.set(LL.machines[hist[0][0]] || hist[0][0]);
+      else if (!hist.length && !fm.get() && LL.item_last[item]) fm.set(LL.machines[LL.item_last[item]] || LL.item_last[item]);
+      updateSpm(item);
+    }
+    async function updateSpm(item){
+      try { const j = await api("/api/batch/spm", {mc: curMc(), item}, "SPM 찾는 중..."); B.spm = [j.spm, j.cav, j.src]; }
+      catch (e) { B.spm = [null, 1, "SPM 조회 실패: " + e.message.slice(0, 40)]; }
+      const [spm, , src] = B.spm;
+      q("#q_spm").value = spm ? spm.toFixed(1) : "";
+      q("#q_src").textContent = src.slice(0, 60);
+      if (spm) calcQty(); else q("#q_qty").value = "";
+      q("#q_qty").focus(); q("#q_qty").select();
+    }
+    function calcQty(){
+      const spm = parseFloat(q("#q_spm").value.replace(/,/g, ""));
+      if (!(spm > 0)) return;
+      q("#q_qty").value = String(Math.round(spm * 60 * hours() * (B.spm[1] || 1) / 10) * 10);
+    }
+    hRadios.forEach(r => r.onchange = () => { q("#q_hman").value = ""; calcQty(); });
+    q("#q_hman").oninput = calcQty;
+    q("#q_spm").oninput = calcQty;
+    q("#q_allmc").onchange = () => refreshMachines();
+    q("#q_allit").onchange = refreshItems;
+    q("#q_mc").addEventListener("keydown", e => { if (e.key === "Enter" && !fm.pop) q("#q_it").focus(); });
+    q("#q_it").addEventListener("keydown", e => { if (e.key === "Enter" && !fi.pop) q("#q_qty").focus(); });
+    q("#q_qty").onkeydown = e => { if (e.key === "Enter") quickAdd(); };
+    q("#q_add").onclick = quickAdd;
+    q("#q_reset").onclick = resetQuick;
+    function resetQuick(){
+      fm.close(); fi.close(); fm.set(""); fi.set("");
+      q("#q_allmc").checked = q("#q_allit").checked = false;
+      fm.setItems(LL.mc_all); fi.setItems(LL.item_list);
+      q("#q_spm").value = q("#q_qty").value = ""; q("#q_src").textContent = "";
+      B.spm = [null, 1, ""]; q("#q_mc").focus();
+    }
+    function quickAdd(){
+      const m = fm.get(), it = fi.get().toUpperCase(), n = q("#q_qty").value.trim();
+      if (!(m && it && n)) return alertBox("설비명·품번·수량을 모두 넣으세요.");
+      B.rows.push({line: m, date_t: "", shift: "", item: it, qty_t: n, prio: "", st: "", lv: ""});
+      dirty(); show();
+      fi.set(""); q("#q_qty").value = q("#q_spm").value = ""; q("#q_src").textContent = "";
+      refreshMachines(""); q("#q_it").focus();
+      lbl(`${B.rows.length}줄  →  다 넣었으면 [검사]`);
+    }
+
+    /* ----- 붙여넣기 ----- */
+    function pasteText(text){
+      let added = 0, skipped = 0;
+      for (const line of text.replace(/\r\n?/g, "\n").split("\n")) {
+        if (!line.trim()) continue;
+        let c = line.split("\t").map(x => x.trim());
+        while (c.length && c[c.length - 1] === "") c.pop();
+        if (c.length >= 7 && /^\d*$/.test(c[0]) && (c.length === 7 || !parseLooseDate(c[1]))) c = c.slice(1);   // Upload Seq 칸 빼기
+        if (c.length >= 5 && parseLooseDate(c[1])) {                                                        // MES 양식
+          while (c.length < 6) c.push("");
+          B.rows.push({line: c[0], date_t: c[1], shift: c[2], item: c[3], qty_t: c[4], prio: c[5], st: "", lv: ""}); added++; continue;
+        }
+        if (c.length >= 3 && /^[\d,]+(\.\d+)?$/.test(c[2])) {                                               // 설비명·품번·수량
+          B.rows.push({line: c[0], date_t: "", shift: "", item: c[1], qty_t: c[2], prio: "", st: "", lv: ""}); added++; continue;
+        }
+        skipped++;
+      }
+      dirty(); show();
+      lbl(`${added}줄 붙여넣음` + (skipped ? ` (${skipped}줄 건너뜀: 제목줄·빈칸 등)` : "") + "  →  [검사]를 누르세요.");
+    }
+    ov.addEventListener("paste", e => {
+      if (e.target.closest("input,textarea")) return;
+      const t = (e.clipboardData || window.clipboardData).getData("text");
+      if (t) { e.preventDefault(); pasteText(t); }
+    });
+    q("#b_paste").onclick = async () => {
+      try { if (navigator.clipboard && navigator.clipboard.readText) { const t = await navigator.clipboard.readText(); if (t) return pasteText(t); } } catch (e) {}
+      const t = await dialog({title: "붙여넣기", html: `<div class="hint">엑셀에서 복사한 내용을 아래 칸에 붙여넣고 [추가]를 누르세요.</div><textarea id="pt" style="width:100%;height:240px;margin-top:6px"></textarea>`,
+        buttons: [{t: "취소", v: null}, {t: "추가", c: "b-blue", get: o => o.querySelector("#pt").value}]});
+      if (t) pasteText(t);
+    };
+
+    /* ----- 표 ----- */
+    const raw = (r, c, i) => [i + 1, r.line, r.date || r.date_t || defDate(), r.shift_v || r.shift || defShift(), r.item,
+      r.qty ?? r.qty_t, r.prio || r.prio_auto || "", r.mc || "", r.iname || "", r.mold || "", r.no || "", r.st || "", r.recent_date || "", r.spm ?? ""][c];
+    const sortKey = (v, c) => {
+      if (v === null || v === undefined || String(v).trim() === "") return null;
+      if ([0, 3, 5, 6, 13].includes(c)) { const f = parseFloat(String(v).replace(/[,() ]/g, "")); return isNaN(f) ? [1, String(v).toLowerCase()] : [0, f]; }
+      if ([2, 12].includes(c)) { const d = parseLooseDate(String(v).replace(/[()]/g, "")); return d ? [0, d] : [1, String(v)]; }
+      return [0, String(v).toLowerCase()];
+    };
+    const cmp = (a, b) => a[0] - b[0] || (a[1] < b[1] ? -1 : a[1] > b[1] ? 1 : 0);
+    function show(){
+      let order = B.rows.map((_, i) => i);
+      if (B.sort !== null) {
+        const filled = [], empty = [];
+        order.forEach(i => { const k = sortKey(raw(B.rows[i], B.sort, i), B.sort); (k ? filled : empty).push([i, k]); });
+        filled.sort((x, y) => cmp(x[1], y[1]) * (B.rev ? -1 : 1));
+        order = filled.map(x => x[0]).concat(empty.map(x => x[0]));
+      }
+      const th = BCOLS.map((t, c) => `<th class="sort" data-c="${c}">${t}${B.sort === c ? (B.rev ? " ▼" : " ▲") : ""}</th>`).join("");
+      const body = order.map(i => {
+        const r = B.rows[i];
+        const cells = [i + 1, r.line, r.date_t || `(${defDate()})`, r.shift || `(${defShift()})`, r.item, r.qty_t, r.prio || r.prio_auto || "",
+          r.mc || "", r.iname || "", r.mold || "", r.no || "", r.st || "", (r.recent_date || "").slice(0, 10), r.spm ? Number(r.spm).toFixed(1) : ""];
+        return `<tr data-i="${i}" class="${r.lv || ""}${B.sel.has(i) ? " sel" : ""}"><td class="ck"><input type="checkbox"${B.sel.has(i) ? " checked" : ""}></td>${cells.map((v, c) => `<td data-c="${c}" title="${esc(v)}"${c === 11 ? ' style="max-width:420px"' : ""}${[5, 6].includes(c) ? ' class="num"' : ""}>${esc(v)}</td>`).join("")}</tr>`;
+      }).join("");
+      q("#b_box").innerHTML = B.rows.length ? `<table class="g"><thead><tr><th class="ck"><input type="checkbox" id="b_all"></th>${th}</tr></thead><tbody>${body}</tbody></table>`
+        : `<div class="empty">아직 줄이 없습니다. 빠른 입력 또는 엑셀 붙여넣기(Ctrl+V)로 넣으세요.</div>`;
+      const all = q("#b_all");
+      if (all) all.onchange = () => { B.sel.clear(); if (all.checked) B.rows.forEach((_, i) => B.sel.add(i)); show(); };
+    }
+    q("#b_box").addEventListener("click", e => {
+      const th = e.target.closest("th.sort");
+      if (th) { const c = +th.dataset.c; if (B.sort === c) B.rev = !B.rev; else { B.sort = c; B.rev = false; } return show(); }
+      const tr = e.target.closest("tbody tr"); if (!tr) return;
+      const i = +tr.dataset.i;
+      if (e.target.closest("td.ck")) { if (e.target.tagName !== "INPUT") return; e.target.checked ? B.sel.add(i) : B.sel.delete(i); }
+      else if (e.ctrlKey || e.metaKey) { B.sel.has(i) ? B.sel.delete(i) : B.sel.add(i); }
+      else { B.sel.clear(); B.sel.add(i); }
+      ov.querySelectorAll("#b_box tbody tr").forEach(t => { const on = B.sel.has(+t.dataset.i); t.classList.toggle("sel", on); t.querySelector("input").checked = on; });
+    });
+    q("#b_box").addEventListener("dblclick", async e => {
+      const td = e.target.closest("tbody td[data-c]"); if (!td) return;
+      const i = +td.parentNode.dataset.i, c = +td.dataset.c, r = B.rows[i];
+      const keys = {1: "line", 2: "date_t", 3: "shift", 4: "item", 5: "qty_t", 6: "prio"};
+      if (!keys[c]) return;
+      let v;
+      if (c === 1) { const [a, h] = lineChoices(r.item); v = await askPick("설비", `설비 고르기 (품번 ${r.item})`, a, h, "이 품번을 만든 호기"); }
+      else if (c === 4) { const [a, h] = itemChoices(r.line); v = await askPick("품번", `품번 고르기 (설비 ${r.line})`, a, h, "이 설비에서 만든 품번"); if (v !== null) v = v.toUpperCase(); }
+      else v = await ask(BCOLS[c], `${BCOLS[c]} 값:` + ([2, 3, 6].includes(c) ? "\n(비우면 기본값)" : ""), r[keys[c]] || "");
+      if (v === null || v.trim() === String(r[keys[c]] || "").trim()) return;
+      r[keys[c]] = v.trim();
+      clearDerived(r); r.st = "수정됨 - 검사 필요"; r.lv = "";
+      dirty(); show();
+    });
+    const clearDerived = r => ["mc", "mname", "iname", "mold", "date", "qty", "shift_v", "prio_auto", "no"].forEach(k => delete r[k]);
+    function dirty(){ B.checked = false; B.rows.forEach(r => { r.no = ""; }); }
+    q("#b_def").onchange = () => { dirty(); show(); lbl("기본값이 바뀌었습니다. [검사]를 다시 하세요."); };
+    q("#b_shift").onchange = q("#b_def").onchange;
+
+    function itemChoices(line){
+      const all = [...new Set(LL.item_list.map(x => x[0]).filter(Boolean))].sort((a, b) => a.localeCompare(b, "ko"));
+      const mc = mcCodeOf(line);
+      const hist = mc ? [...new Set((LL.mc_items[mc] || []).map(x => x[0]))].sort((a, b) => a.localeCompare(b, "ko")) : [];
+      return [all, hist];
+    }
+    function lineChoices(item){
+      const all = [...new Set(LL.mc_all.map(x => x[0]).filter(Boolean))].sort((a, b) => a.localeCompare(b, "ko"));
+      const hist = [...new Set((LL.item_mcs[String(item || "").trim().toUpperCase()] || []).map(([mc]) => LL.machines[mc] || mc))].sort((a, b) => a.localeCompare(b, "ko"));
+      return [all, hist];
+    }
+    function mcCodeOf(t){
+      t = String(t || "").trim();
+      if (LL.machines.hasOwnProperty(t)) return t;
+      const n = t.replace(/\s/g, "").toUpperCase();
+      for (const [c, nm] of Object.entries(LL.machines)) if (nm && nm.replace(/\s/g, "").toUpperCase() === n) return c;
+      return "";
+    }
+
+    q("#b_editsel").onclick = async () => {
+      if (B.sel.size !== 1) return alertBox("수정할 줄 1개를 선택하세요.");
+      const i = [...B.sel][0], r = B.rows[i];
+      const f = [["설비", "line", r.line], ["계획일자", "date_t", r.date_t || defDate()], ["교대조", "shift", r.shift || defShift()],
+                 ["품번", "item", r.item], ["계획수량", "qty_t", r.qty_t], ["순위", "prio", r.prio]];
+      const res = await dialog({title: "등록 예정 작업지시 수정 - MES 미반영",
+        html: `<div class="red" style="margin-bottom:10px">이 창의 수정은 등록 예정 목록만 바꿉니다. MES는 아직 변경되지 않습니다.</div>
+          <div class="form">${f.map(([lab, k, v]) => `<span class="lab">${lab}</span><span><input type="text" id="e_${k}" value="${esc(v)}" style="width:${k === "line" || k === "item" ? 220 : 160}px"></span>`).join("")}</div>
+          <div class="hint" style="margin-top:10px">최근 작업: ${esc((r.recent_date || "-").slice(0, 10))} &nbsp; 최근 SPM: ${r.spm ? Number(r.spm).toFixed(1) : "없음"}</div>`,
+        buttons: [{t: "취소", v: null}, {t: "저장", c: "b-blue", check: o => {
+          const it = o.querySelector("#e_item").value.trim(), qt = o.querySelector("#e_qty_t").value.trim(), ln = o.querySelector("#e_line").value.trim();
+          if (!ln || !it || !qt) { warnBox("설비·품번·계획수량은 비울 수 없습니다."); return false; }
+          if (!(parseFloat(qt.replace(/,/g, "")) > 0)) { warnBox("계획수량은 1 이상의 숫자로 넣으세요."); return false; }
+          return true;
+        }, get: o => Object.fromEntries(f.map(([, k]) => [k, o.querySelector("#e_" + k).value.trim()]))}],
+        onOpen: o => {
+          new Suggest(o.querySelector("#e_line"), {items: lineChoices("")[0].map(x => [x, x]), rows: 20});
+          new Suggest(o.querySelector("#e_item"), {items: itemChoices("")[0].map(x => [x, x]), rows: 20});
+        }});
+      if (!res) return;
+      Object.assign(r, res); r.item = r.item.toUpperCase();
+      clearDerived(r); r.st = "수정됨 - 검사 필요"; r.lv = "";
+      dirty(); show(); lbl("등록 예정 목록을 수정했습니다. [검사]를 다시 하세요.");
+    };
+    q("#b_delsel").onclick = () => {
+      if (!B.sel.size) return alertBox("뺄 줄을 선택하세요.");
+      B.rows = B.rows.filter((_, i) => !B.sel.has(i)); B.sel.clear(); dirty(); show();
+      lbl(`${B.rows.length}줄 남음`);
+    };
+    q("#b_clear").onclick = async () => {
+      if (B.rows.length && !await confirmBox("표를 모두 비울까요?")) return;
+      B.rows = []; B.sel.clear(); dirty(); show(); resetQuick(); lbl("비웠습니다. 설비부터 다시 고르세요.");
+    };
+
+    /* ----- 검사 / 번호 / 반영 ----- */
+    const send = () => ({rows: B.rows.map(r => ({...r})), d_def: defDate(), shift: defShift(), hours: B.hours || 0});
+    const merge = rows => { rows.forEach((n, i) => { B.rows[i] = {...B.rows[i], ...n}; }); };
+    async function check(){
+      if (!B.rows.length) { alertBox("붙여넣은 줄이 없습니다."); return false; }
+      if (!defDate()) { warnBox("기본 계획일자를 넣으세요."); return false; }
+      try {
+        const j = await api("/api/batch/check", send(), "검사 중...");
+        merge(j.rows); B.checked = true; show();
+        const ne = B.rows.filter(r => r.lv === "err").length, nw = B.rows.filter(r => ["warn", "dup"].includes(r.lv)).length;
+        lbl(`검사: ${B.rows.length}줄 - 오류 ${ne} (빨강, 반영 안 됨) / 확인 ${nw} (노랑·하늘)` + (ne ? "  →  빨간 줄을 고치거나 빼세요" : "  →  [W/O 번호생성]"));
+        return ne === 0;
+      } catch (e) { showErr(e); return false; }
+    }
+    async function makeNo(){
+      if (!B.rows.length) { alertBox("붙여넣은 줄이 없습니다."); return false; }
+      try {
+        const j = await api("/api/batch/make_no", send(), "작업지시번호 만드는 중...");
+        merge(j.rows); B.checked = true; show();
+        if (j.error) { warnBox(j.error); return false; }
+        lbl(`작업지시번호 ${B.rows.length}개 생성 (아직 저장 안 됨)  ${j.note ? "· 규칙: " + j.note : "· 같은 날 기존 번호 형식 사용"}  →  번호 확인 후 [작업지시 반영]`);
+        return true;
+      } catch (e) { showErr(e); return false; }
+    }
+    q("#b_check").onclick = check;
+    q("#b_no").onclick = makeNo;
+    q("#b_apply").onclick = async () => {
+      if (!B.rows.length) return;
+      if (!B.rows.every(r => r.no) && !await makeNo()) return;
+      if (B.rows.some(r => r.lv === "err")) return warnBox("빨간 줄이 있습니다. 고치거나 뺀 뒤 하세요.");
+      const nw = B.rows.filter(r => ["warn", "dup"].includes(r.lv)).length;
+      const days = [...new Set(B.rows.map(r => r.date || r.date_t || defDate()))].sort();
+      const seq = no => +((no.match(/P(\d+)$/) || [0, 0])[1]);
+      const nos = B.rows.map(r => r.no).sort((a, b) => seq(a) - seq(b));
+      const msg = `작업지시 ${B.rows.length}건을 MES에 반영합니다.\n\n` + (B.hours ? `  근무기준: ${hoursText(B.hours)}\n` : "")
+        + `  계획일자: ${days.slice(0, 5).join(", ")}${days.length > 5 ? " 외" : ""}\n  번호: ${nos[0]} ~ ${nos[nos.length - 1]}\n`
+        + (nw ? `  ※ 확인 필요 줄 ${nw}개 (노랑·하늘)\n` : "")
+        + "\nMES '작업지시일괄처리'와 같은 방법으로 넣습니다.\n기존 작업지시는 바뀌지 않습니다. 계속할까요?";
+      if (!await confirmBox(msg, "작업지시 반영", "반영", nw > 0)) return;
+      try {
+        const j = await api("/api/batch/apply", send(), "MES에 반영 중...");
+        merge(j.rows); B.applied = true; show();
+        lbl(`반영 완료 ${j.ok}/${j.n}건 (업로더 session ${j.sid}).  현장 화면에 보이는지 확인하세요.`);
+        await alertBox(`작업지시 ${j.ok}/${j.n}건 반영했습니다.`);
+        if (G.fetched) fetchGrid(false);
+      } catch (e) { showErr(e); }
+    };
+
+    show();
+    if (recent) {
+      lbl(`최근 30일 자료를 불러오는 중... (${hoursText(recentHours)})`);
+      api("/api/batch/recent", {hours: recentHours}, "최근 30일 작업지시 불러오는 중...").then(j => {
+        B.rows = j.rows; show();
+        const noSpm = j.rows.filter(r => !r.qty_t).length;
+        lbl(`최근 30일 호기별 최종 작업지시 ${j.rows.length}건 불러옴 · ${hoursText(recentHours)} 기준 계획수량 자동계산`
+          + (noSpm ? ` · SPM 없어 직접 입력 필요 ${noSpm}개` : "") + "  → 필요 없는 줄은 빼고, 수정 후 [검사]");
+        if (!j.rows.length) alertBox("최근 30일 작업지시가 없습니다.");
+      }).catch(e => { showErr(e); lbl("최근 작업지시 불러오기 실패"); });
+    } else q("#q_mc").focus();
+  }
+}
+
+/* 목록에서 고르기 창 (글자 치면 걸러짐, 직접 입력도 됨) */
+function askPick(title, labelText, all, hist, histText){
+  return dialog({title, cls: "",
+    html: `<b>${esc(labelText)}</b><div class="hint" style="margin:4px 0 6px">글자를 치면 바로 걸러집니다. 누르면 고르기, 목록에 없으면 직접 입력 후 [확인]</div>
+      <input type="text" id="pk" style="width:100%">
+      ${hist.length ? `<label class="chk" style="margin-top:6px"><input type="checkbox" id="pkh" checked> ${esc(histText)}만 보기 (${hist.length}개)</label>` : ""}
+      <div class="list" id="pkl" style="margin-top:6px"></div><div class="hint" id="pkc"></div>`,
+    buttons: [{t: "취소", v: null}, {t: "확인", c: "b-blue", get: ov => ov.querySelector("#pk").value.trim() || null}],
+    onOpen: (ov, close) => {
+      let shown = [];
+      const fill = () => {
+        const src = ov.querySelector("#pkh") && ov.querySelector("#pkh").checked ? hist : all;
+        const t = ov.querySelector("#pk").value.trim().toUpperCase().replace(/\s/g, "");
+        shown = src.filter(x => !t || x.toUpperCase().replace(/\s/g, "").includes(t));
+        ov.querySelector("#pkl").innerHTML = shown.slice(0, 500).map(x => `<div data-v="${esc(x)}">${esc(x)}</div>`).join("");
+        ov.querySelector("#pkc").textContent = `${shown.length.toLocaleString()}개 / 전체 ${src.length.toLocaleString()}개`;
+      };
+      ov.querySelector("#pk").oninput = fill;
+      ov.querySelector("#pk").onkeydown = e => { if (e.key === "Enter") { const t = e.target.value.trim(); close(shown.length === 1 ? shown[0] : (t || null)); } };
+      if (ov.querySelector("#pkh")) ov.querySelector("#pkh").onchange = fill;
+      ov.querySelector("#pkl").onclick = e => { const d = e.target.closest("div[data-v]"); if (d) close(d.dataset.v); };
+      fill();
+    }});
+}
+
+/* ============================================================
+   시작
+   ============================================================ */
+$("#who").value = LS.get("who", "");
+$("#who").onchange = () => LS.set("who", $("#who").value.trim());
+$("#d1").value = $("#d2").value = today();
+$("#bFetch").onclick = () => fetchGrid();
+["#fmc", "#fit"].forEach(s => $(s).onkeydown = e => { if (e.key === "Enter") fetchGrid(); });
+$("#fq").oninput = () => render();
+$("#bXls").onclick = exportXls;
+$("#bRecent").onclick = openRecent;
+$("#bBatch").onclick = () => openBatch();
+$("#bEdit").onclick = () => openForm();
+$("#bDel").onclick = deleteRows;
+$("#bDetail").onclick = detail;
+$("#bSave").onclick = saveGrid;
+$("#bCancel").onclick = cancelEdits;
+window.addEventListener("beforeunload", e => { if (G.edits.size) { e.preventDefault(); e.returnValue = ""; } });
+
+(async () => {
+  try {
+    const r = await fetch("/api/info", {method: "POST", body: "{}"});
+    const info = await r.json();
+    if (info.pin && !PIN) {
+      const p = await ask("PIN 입력", "접속 PIN을 넣으세요.", "", "password");
+      if (p !== null) { PIN = p; try { sessionStorage.setItem("pin", p); } catch(e) {} }
+    }
+  } catch (e) {}
+  try {
+    const j = await api("/api/ping", {}, "MES 접속 확인 중...");
+    $("#db .dot").className = "dot ok"; $("#dbt").textContent = "MES 연결됨";
+  } catch (e) {
+    $("#db .dot").className = "dot bad"; $("#dbt").textContent = "MES 연결 안 됨";
+    $("#db").title = e.message;
+  }
+  if (!$("#who").value) $("#who").focus();
+})();
+</script>
+</body>
+</html>
