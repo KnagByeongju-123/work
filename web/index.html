@@ -3,211 +3,253 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>작업지시 관리 · 태진다이텍 MES</title>
+<title>태진다이텍 MES 관리 도구 (웹)</title>
 <style>
 :root{
-  --bg:#f3f5f8; --panel:#fff; --ink:#1d2433; --sub:#5b6474; --line:#d7dce4; --head:#e9edf3;
-  --blue:#1565c0; --blue-d:#0d4a8f; --green:#2e7d32; --orange:#ef7d00; --red:#c62828; --teal:#00838f; --gray:#e4e7ec;
+  --bg:#f3f5f8; --ink:#1d2433; --sub:#5b6474; --line:#d7dce4; --head:#e9edf3;
+  --blue:#1565c0; --blue-d:#0d4a8f; --green:#2e7d32; --orange:#ef7d00; --red:#c62828; --teal:#00838f;
   --info:#eef4fb; --info-line:#b7cce4; --title:#1f4e79;
-  --err:#ffc7ce; --warn:#ffeb9c; --dup:#ddebf7; --ok:#c6efce; --edit:#ffd8a8; --sel:#b9d7ff;
+  --err:#ffc7ce; --warn:#ffeb9c; --dup:#ddebf7; --ok:#c6efce; --edit:#fce4d6; --chg:#ffcf9e;
 }
 *{box-sizing:border-box}
 html,body{margin:0;height:100%}
-body{font-family:"맑은 고딕","Malgun Gothic","Apple SD Gothic Neo",system-ui,sans-serif;font-size:13px;color:var(--ink);background:var(--bg)}
+body{font-family:"맑은 고딕","Malgun Gothic","Apple SD Gothic Neo",system-ui,sans-serif;font-size:13px;color:var(--ink);background:var(--bg);display:flex;flex-direction:column}
 button,input,select,textarea{font:inherit;color:inherit}
-button{cursor:pointer;border:1px solid #b9c0cc;background:#fff;border-radius:6px;padding:7px 12px;white-space:nowrap}
-button:hover{filter:brightness(.96)}
-button:disabled{opacity:.5;cursor:default}
+button{cursor:pointer;border:1px solid #b9c0cc;background:#fff;border-radius:6px;padding:6px 11px;white-space:nowrap}
+button:hover{filter:brightness(.95)}
+button:disabled{opacity:.45;cursor:default}
 .b-blue{background:var(--blue);border-color:var(--blue-d);color:#fff;font-weight:bold}
 .b-green{background:var(--green);border-color:#1b5e20;color:#fff;font-weight:bold}
 .b-orange{background:var(--orange);border-color:#c66800;color:#fff;font-weight:bold}
 .b-red{background:var(--red);border-color:#8e1b1b;color:#fff;font-weight:bold}
 .b-teal{background:var(--teal);border-color:#006064;color:#fff;font-weight:bold}
-.b-big{padding:9px 16px}
-input[type=text],input[type=date],input[type=number],input[type=password],select,textarea{border:1px solid #b9c0cc;border-radius:5px;padding:6px 8px;background:#fff;min-width:0}
+.b-big{padding:8px 15px}
+input[type=text],input[type=date],input[type=password],select,textarea{border:1px solid #b9c0cc;border-radius:5px;padding:5px 8px;background:#fff;min-width:0}
 input:focus,select:focus,textarea:focus{outline:2px solid #90bdf5;outline-offset:0}
+input[readonly]{background:#f1f3f6}
 label.chk{display:inline-flex;align-items:center;gap:4px;white-space:nowrap;cursor:pointer}
-.top{display:flex;align-items:center;gap:10px;padding:8px 14px;background:#1f3b5c;color:#fff;flex-wrap:wrap}
-.top h1{font-size:16px;margin:0;flex:1;min-width:200px}
+.top{display:flex;align-items:center;gap:10px;padding:7px 14px;background:#1f3b5c;color:#fff;flex-wrap:wrap}
+.top h1{font-size:15px;margin:0;flex:1;min-width:180px}
 .top .who{display:flex;align-items:center;gap:6px}
-.top .who input{width:110px;padding:4px 8px}
+.top .who input{width:110px;padding:3px 8px}
 .dot{display:inline-block;width:10px;height:10px;border-radius:50%;background:#999;margin-right:4px}
 .dot.ok{background:#4caf50}.dot.bad{background:#f44336}
-.wrap{padding:10px 14px;display:flex;flex-direction:column;gap:8px;height:calc(100% - 46px)}
-.info{background:var(--info);border:1px solid var(--info-line);border-radius:6px;padding:8px 12px}
-.info b.t{color:var(--title);font-size:15px}
-.info .l1{color:#333;margin-top:3px}
-.info .l2{color:var(--green);font-weight:bold;margin-top:3px}
+nav.tabs{display:flex;gap:2px;padding:6px 10px 0;background:#d9dee6;overflow-x:auto;flex-shrink:0;scrollbar-width:thin}
+nav.tabs button{border-radius:7px 7px 0 0;border-bottom:none;background:#eef1f5;font-weight:bold;padding:7px 13px}
+nav.tabs button.on{background:#1f4e79;color:#fff;border-color:#1f4e79}
+main{flex:1;min-height:0;position:relative}
+section.page{position:absolute;inset:0;padding:8px 12px;display:none;flex-direction:column;gap:6px;overflow:auto}
+section.page.on{display:flex}
+.info{background:var(--info);border:1px solid var(--info-line);border-radius:6px;padding:7px 12px;display:flex;gap:10px;align-items:center}
+.info .tx{flex:1;min-width:0}
+.info b.t{color:var(--title);font-size:14px}
+.info .l1{color:#333;margin-top:2px;white-space:pre-line}
+.info .l2{color:var(--green);font-weight:bold;margin-top:2px}
 .bar{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
 .bar .sp{flex:1}
 .bar .sep{width:1px;align-self:stretch;background:var(--line);margin:0 4px}
 .legend{color:var(--sub);font-size:12px}
-.f-date{width:140px}
 .status{font-weight:bold;color:#333;min-height:18px}
 .status .sum{color:var(--red);font-weight:normal}
-.tbox{flex:1;min-height:260px;overflow:auto;background:#fff;border:1px solid var(--line);border-radius:6px;position:relative}
+.mode-on{background:#fff3e0;border-radius:6px;padding:2px 8px;outline:2px solid var(--orange)}
+.sa{background:#c55a11;color:#fff;font-weight:bold;padding:5px 10px;border-radius:5px}
+.tbox{flex:1;min-height:200px;overflow:auto;background:#fff;border:1px solid var(--line);border-radius:6px;position:relative}
+.tbox.fix{flex:none;height:auto;max-height:60vh;min-height:0}
 table.g{border-collapse:separate;border-spacing:0;font-size:12.5px;width:max-content;min-width:100%}
-table.g th,table.g td{border-right:1px solid #e3e6eb;border-bottom:1px solid #e3e6eb;padding:5px 8px;white-space:nowrap;max-width:360px;overflow:hidden;text-overflow:ellipsis;text-align:left}
-table.g th{position:sticky;top:0;background:var(--head);z-index:2;font-weight:bold;cursor:default;user-select:none}
+table.g th,table.g td{border-right:1px solid #e3e6eb;border-bottom:1px solid #e3e6eb;padding:4px 8px;white-space:nowrap;max-width:360px;overflow:hidden;text-overflow:ellipsis;text-align:left}
+table.g th{position:sticky;top:0;background:var(--head);z-index:2;font-weight:bold;user-select:none}
 table.g th.sort{cursor:pointer}
-table.g td.ck,table.g th.ck{position:sticky;left:0;background:inherit;z-index:1;width:30px;text-align:center;padding:0 4px}
+table.g td.ck,table.g th.ck{position:sticky;left:0;z-index:1;width:30px;text-align:center;padding:0 4px;background:inherit}
 table.g th.ck{z-index:3;background:var(--head)}
 table.g tbody tr{background:#fff}
 table.g tbody tr:hover{filter:brightness(.97)}
-tr.err{background:var(--err)!important}tr.warn{background:var(--warn)!important}tr.dup{background:var(--dup)!important}
-tr.ok{background:var(--ok)!important}tr.edit{background:#fff3e6!important}
+table.g td.num{text-align:right}
+table.g td.wrap{white-space:normal;max-width:520px}
+tr.err{background:var(--err)!important}tr.warn,tr.hot{background:var(--warn)!important}tr.dup{background:var(--dup)!important}
+tr.ok,tr.new{background:var(--ok)!important}tr.edit,tr.upd{background:var(--edit)!important}tr.del{background:var(--err)!important}
+tr.off td{color:#999}
 tr.sel td{box-shadow:inset 0 2px 0 #2b7de9,inset 0 -2px 0 #2b7de9;font-weight:bold}
-td.chg{background:var(--edit)!important}
-td.num{text-align:right}
+td.chg{background:var(--chg)!important}
 .more{padding:10px;text-align:center}
-.empty{padding:40px;text-align:center;color:var(--sub)}
-.mode-on{background:#fff3e0;border-radius:6px;padding:2px 8px;outline:2px solid var(--orange)}
-/* 덮개·창 */
+.empty{padding:36px;text-align:center;color:var(--sub);white-space:pre-line}
+.split{display:flex;flex-direction:column;gap:6px;flex:1;min-height:0}
+.split .tbox.tb-top{flex:3}.split .tbox.tb-bot{flex:2}
+fieldset{border:1px solid var(--line);border-radius:6px;padding:8px 10px;background:#fff}
+legend{font-weight:bold;color:var(--title);padding:0 4px}
+.grid4{display:grid;grid-template-columns:repeat(4,auto 1fr);gap:6px 8px;align-items:center}
+.grid4 label{text-align:right;font-weight:bold}
+/* 창 */
 .ov{position:fixed;inset:0;background:rgba(20,30,45,.45);display:flex;align-items:center;justify-content:center;z-index:50;padding:12px}
 .dlg{background:#fff;border-radius:10px;box-shadow:0 10px 40px rgba(0,0,0,.3);max-width:min(760px,100%);width:100%;max-height:calc(100vh - 24px);display:flex;flex-direction:column}
 .dlg.wide{max-width:min(1500px,100%);height:calc(100vh - 24px)}
-.dlg.mid{max-width:min(900px,100%)}
-.dlg h3{margin:0;padding:12px 16px;border-bottom:1px solid var(--line);font-size:15px;color:var(--title)}
-.dlg .bd{padding:12px 16px;overflow:auto;flex:1}
+.dlg.mid{max-width:min(980px,100%)}
+.dlg h3{margin:0;padding:11px 16px;border-bottom:1px solid var(--line);font-size:15px;color:var(--title)}
+.dlg .bd{padding:12px 16px;overflow:auto;flex:1;display:flex;flex-direction:column;gap:8px}
 .dlg .ft{padding:10px 16px;border-top:1px solid var(--line);display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap}
 .dlg pre{white-space:pre-wrap;font-family:inherit;margin:0;line-height:1.55}
+pre.code{font-family:Consolas,"D2Coding",monospace;font-size:12px;background:#f7f8fa;border:1px solid var(--line);padding:10px;overflow:auto;white-space:pre;flex:1}
+mark{background:#ffeb3b}
 .busy{position:fixed;inset:0;background:rgba(255,255,255,.55);z-index:90;display:none;align-items:center;justify-content:center}
 .busy.on{display:flex}
-.busy div{background:#1f3b5c;color:#fff;padding:12px 20px;border-radius:8px;font-weight:bold}
-.form{display:grid;grid-template-columns:110px 1fr;gap:9px 12px;align-items:center}
+.busy .box{background:#1f3b5c;color:#fff;padding:14px 22px;border-radius:8px;font-weight:bold;max-width:90vw;text-align:center}
+.busy .box button{margin-top:10px}
+.form{display:grid;grid-template-columns:120px 1fr;gap:8px 12px;align-items:center}
 .form .lab{font-weight:bold}
-.form .note{grid-column:2;font-size:12px;color:var(--sub);margin-top:-5px}
-.form .note.bad{color:var(--red)}.form .note.good{color:var(--green)}
+.form .note{grid-column:2;font-size:12px;color:var(--sub);margin-top:-4px}
+.note.bad,.bad{color:var(--red)}.note.good,.good{color:var(--green)}
 .hint{color:var(--sub);font-size:12px}
-.red{color:var(--red)}.green{color:var(--green)}
+.red{color:var(--red)}
 .list{border:1px solid var(--line);border-radius:6px;max-height:50vh;overflow:auto}
 .list div{padding:6px 10px;border-bottom:1px solid #eef0f3;cursor:pointer}
-.list div:hover,.list div.on{background:#e3efff}
+.list div:hover{background:#e3efff}
 .list div.w{background:var(--warn)}
-/* 글자 치면 걸러지는 입력칸 */
 .sg{position:relative;display:inline-flex}
 .sg input{border-top-right-radius:0;border-bottom-right-radius:0}
-.sg button{border-top-left-radius:0;border-bottom-left-radius:0;border-left:0;padding:6px 8px}
-.sg-pop{position:fixed;z-index:80;background:#fff;border:1px solid #9aa6b8;border-radius:6px;box-shadow:0 6px 20px rgba(0,0,0,.2);max-height:60vh;overflow:auto;min-width:200px}
+.sg button{border-top-left-radius:0;border-bottom-left-radius:0;border-left:0;padding:5px 8px}
+.sg-pop{position:fixed;z-index:80;background:#fff;border:1px solid #9aa6b8;border-radius:6px;box-shadow:0 6px 20px rgba(0,0,0,.2);overflow:auto;min-width:200px}
 .sg-pop div{padding:6px 10px;cursor:pointer;white-space:nowrap}
 .sg-pop div.on,.sg-pop div:hover{background:#e3efff}
-/* 일괄등록 */
-.qf{background:#fff7e6;border:1px solid #f0c36d;border-radius:6px;padding:8px;display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.qf{background:#fff7e6;border:1px solid #f0c36d;border-radius:6px;padding:7px;display:flex;gap:6px;align-items:center;flex-wrap:wrap}
 .qf .t{font-weight:bold;color:#c55a11}
 .lg{display:flex;gap:6px;flex-wrap:wrap;font-size:12px}
 .lg span{border:1px solid #888;padding:1px 6px;border-radius:3px}
-.bt{display:flex;flex-direction:column;gap:8px;height:100%}
-.bt .tbox{min-height:200px}
-.small{width:70px}
-.tiny{width:52px}
+.small{width:72px}.tiny{width:52px}
+.help h1{color:var(--title);font-size:19px;margin:6px 0}
+.help h2{color:var(--title);font-size:15px;margin:16px 0 4px}
+.help p{margin:4px 0}
+.help li{margin:3px 0}
+.help{background:#fff;border:1px solid var(--line);border-radius:6px;padding:10px 22px;overflow:auto;flex:1;line-height:1.6}
+td input.cell{width:100%;min-width:90px;padding:2px 4px}
 @media (max-width:820px){
-  .wrap{padding:8px;height:auto}
-  .tbox{min-height:60vh;max-height:70vh}
+  section.page{padding:6px}
+  .tbox{min-height:55vh}
   .bar .sp{display:none}
-  .act button{flex:1 1 46%}
-  .bar.filters input[type=text]{flex:1 1 120px}
-  .f-date{width:130px}
+  .bar.act button{flex:1 1 46%}
+  .info .l1,.info .l2{font-size:12px}
+  .info button{display:none}
   .dlg{max-height:100vh;border-radius:0}
   .ov{padding:0}
   .dlg.wide,.dlg.mid,.dlg{max-width:100%;height:100%}
   .form{grid-template-columns:1fr}
   .form .note{grid-column:1}
-  .bt .tbox{min-height:45vh}
-  .bt .info .l1{display:none}
-  .top h1{font-size:14px}
+  .grid4{grid-template-columns:auto 1fr}
+  .grid4 label{text-align:left}
+  .top h1{font-size:13px}
+  .split .tbox{min-height:40vh}
 }
 </style>
 </head>
 <body>
 <div class="top">
-  <h1>태진다이텍 MES · ③ 작업지시 관리</h1>
+  <h1 id="apptitle">태진다이텍 MES 관리 도구 (웹)</h1>
   <span id="db" title="MES 접속 상태"><span class="dot"></span><span id="dbt">확인 중</span></span>
   <span class="who">작업자 <input id="who" type="text" placeholder="이름" maxlength="20"></span>
 </div>
-<div class="wrap" id="main">
-  <div class="info">
-    <b class="t">작업지시 새로 만들기 · 고치기 · 확인 · 잘못 낸 것 삭제</b>
-    <div class="l1"><span class="red">빨강</span> = 금형 없음(*) · <b style="color:#a07800">노랑</b> = 품번의 금형과 다름 · <b style="color:#2b6cb0">하늘</b> = 같은 날 중복. 실적이 있는 작업지시는 삭제할 수 없습니다.</div>
-    <div class="l2">새로: [최근 작업지시 불러오기] 호기별 최근 품번 / [여러 건 일괄등록] 설비명·품번·수량만 &nbsp;/&nbsp; 고치기: [MES에서 조회] → 줄 더블클릭 → [수정 저장] &nbsp;/&nbsp; 삭제: [수정 모드] → [선택 줄 삭제]</div>
-  </div>
-
-  <div class="bar filters">
-    <span>지시일</span><input id="d1" type="date" class="f-date">
-    <span>~</span><input id="d2" type="date" class="f-date">
-    <span>설비</span><input id="fmc" type="text" style="width:80px">
-    <span>품번/품명</span><input id="fit" type="text" style="width:140px">
-    <label class="chk"><input id="fnm" type="checkbox"> 금형 없음(*)만</label>
-    <button class="b-blue" id="bFetch">MES에서 조회</button>
-    <span>표에서 찾기</span><input id="fq" type="text" style="width:130px">
-    <span class="sp"></span>
-    <button class="b-teal" id="bXls">엑셀로 저장</button>
-  </div>
-
-  <div class="bar act">
-    <button class="b-orange b-big" id="bRecent">최근 작업지시 불러오기</button>
-    <button class="b-green b-big" id="bBatch">여러 건 일괄등록</button>
-    <button class="b-blue b-big" id="bEdit">선택 작업지시 고치기</button>
-    <span class="sep"></span>
-    <label class="chk" id="modeBox"><input id="mode" type="checkbox"> 수정 모드</label>
-    <span class="sp"></span>
-    <button class="b-red b-big" id="bDel">선택 줄 삭제</button>
-    <button class="b-big" id="bDetail">선택 줄 세로로 보기</button>
-    <button class="b-green b-big" id="bSave">수정 저장 (0)</button>
-    <button class="b-big" id="bCancel">수정 취소</button>
-  </div>
-  <div class="legend">빨강 = 금형 없음(*) &nbsp; 노랑 = 금형이 지금 품번 연결과 다름 &nbsp; 하늘 = 같은 날·설비·품번 여러 건 &nbsp;|&nbsp; 줄 더블클릭 = 고치기 창 &nbsp;(표에서 칸을 직접 고치려면 [수정 모드] → 칸 더블클릭)</div>
-
-  <div class="tbox" id="gbox"><div class="empty">[MES에서 조회]를 누르세요.</div></div>
-  <div class="status" id="status"></div>
-</div>
-<div class="busy" id="busy"><div id="busyT">처리 중...</div></div>
+<nav class="tabs" id="tabs"></nav>
+<main id="main"></main>
+<div class="busy" id="busy"><div class="box"><div id="busyT">처리 중...</div><div id="busyC"></div></div></div>
 
 <script>
 "use strict";
 /* ============================================================
    공통 도구
    ============================================================ */
-const $ = s => document.querySelector(s);
+const $ = (s, el = document) => el.querySelector(s);
+const $$ = (s, el = document) => [...el.querySelectorAll(s)];
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
-const KB = 3;                                            // 한글 1자 = 3byte (MES 설정과 같음)
+const KB = 3;
 const blen = s => [...s].reduce((n, ch) => n + (ch.charCodeAt(0) < 128 ? 1 : KB), 0);
 const pad = n => String(n).padStart(2, "0");
 const ymd = d => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
 const today = () => ymd(new Date());
+const addDays = (s, n) => { const d = new Date(s + "T00:00:00"); d.setDate(d.getDate() + n); return ymd(d); };
 const LS = {get(k, d){try{return localStorage.getItem(k) ?? d}catch(e){return d}}, set(k, v){try{localStorage.setItem(k, v)}catch(e){}}};
+let META = null;
 
 let busyN = 0;
 function busy(on, text){
   busyN = Math.max(0, busyN + (on ? 1 : -1));
   if (text) $("#busyT").textContent = text;
+  if (!busyN) $("#busyC").innerHTML = "";
   $("#busy").classList.toggle("on", busyN > 0);
 }
-
 let PIN = "";
 try { PIN = sessionStorage.getItem("pin") || ""; } catch(e) {}
+const headers = () => ({"Content-Type": "application/json", "X-User": encodeURIComponent($("#who").value.trim()), "X-Pin": PIN});
 
-async function api(path, body, text){
-  busy(true, text || "MES와 주고받는 중...");
-  try {
-    const r = await fetch(path, {method: "POST", headers: {"Content-Type": "application/json",
-      "X-User": encodeURIComponent($("#who").value.trim()), "X-Pin": PIN}, body: JSON.stringify(body || {})});
-    if (path === "/api/wo/export" && r.ok) return r;
-    let j = {};
-    try { j = await r.json(); } catch(e) { j = {error: `서버 응답 오류 (${r.status})`}; }
-    if (r.status === 401 && j.pin) {
-      busy(false);
+async function rawPost(path, body){
+  let r;
+  try { r = await fetch(path, {method: "POST", headers: headers(), body: JSON.stringify(body || {})}); }
+  catch (e) { throw new Error("서버에 연결할 수 없습니다.\n서버 PC가 켜져 있고 서버 창이 열려 있는지 확인하세요."); }
+  if (r.status === 401) {
+    let j = {}; try { j = await r.clone().json(); } catch(e) {}
+    if (j.pin) {
       const p = await ask("PIN 입력", "접속 PIN을 넣으세요.", "", "password");
       if (p === null) throw Object.assign(new Error("PIN이 필요합니다."), {kind: "warn"});
       PIN = p; try { sessionStorage.setItem("pin", p); } catch(e) {}
-      busy(true);
-      return await api(path, body, text);
+      return rawPost(path, body);
     }
-    if (!r.ok || j.error && !("rows" in j)) throw Object.assign(new Error(j.error || `오류 ${r.status}`), {kind: j.kind});
+  }
+  return r;
+}
+async function api(path, body, text){
+  // text === null : 화면을 막지 않고 조용히 (줄 클릭할 때 읽기 등 - 더블클릭이 막히지 않게)
+  const quiet = text === null;
+  if (!quiet) busy(true, text || "MES와 주고받는 중...");
+  try {
+    const r = await rawPost(path, body);
+    let j = {};
+    try { j = await r.json(); } catch(e) { j = {error: `서버 응답 오류 (${r.status})`}; }
+    if (!r.ok) throw Object.assign(new Error(j.error || `오류 ${r.status}`), {kind: j.kind});
     return j;
-  } catch (e) {
-    if (e instanceof TypeError) throw new Error("서버에 연결할 수 없습니다.\n서버 PC가 켜져 있고 server.py 창이 열려 있는지 확인하세요.");
-    throw e;
+  } finally { if (!quiet) busy(false); }
+}
+async function apiFile(path, body, text){
+  busy(true, text || "파일 만드는 중...");
+  try {
+    const r = await rawPost(path, body);
+    if (!r.ok) { let j = {}; try { j = await r.json(); } catch(e) {} throw Object.assign(new Error(j.error || `오류 ${r.status}`), {kind: j.kind}); }
+    const blob = await r.blob();
+    const m = (r.headers.get("Content-Disposition") || "").match(/filename\*=UTF-8''([^;]+)/);
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = m ? decodeURIComponent(m[1]) : "파일";
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 8000);
   } finally { busy(false); }
+}
+async function apiJob(path, body, title){
+  const st = await api("/api/job/start", {path, body}, title);
+  busy(true, title || "확인 중...");
+  let stop = false;
+  $("#busyC").innerHTML = `<button id="jobStop">취소</button>`;
+  $("#jobStop").onclick = async () => { stop = true; $("#busyT").textContent = "취소하는 중... (지금 확인 중인 표가 끝나면 멈춥니다)"; try { await rawPost("/api/job/cancel", {id: st.id}); } catch(e) {} };
+  try {
+    while (true) {
+      await new Promise(r => setTimeout(r, 500));
+      const r = await rawPost("/api/job/poll", {id: st.id});
+      const j = await r.json();
+      if (!r.ok) throw Object.assign(new Error(j.error), {kind: j.kind});
+      if (j.done) {
+        if (j.error) throw Object.assign(new Error(j.error), {kind: j.kind});
+        return j.result;
+      }
+      if (!stop) $("#busyT").textContent = j.msg;
+    }
+  } finally { busy(false); }
+}
+function pickFile(accept){
+  return new Promise(res => {
+    const inp = document.createElement("input");
+    inp.type = "file"; inp.accept = accept || ".xlsx,.xlsm";
+    inp.onchange = () => {
+      const f = inp.files[0]; if (!f) return res(null);
+      const rd = new FileReader();
+      rd.onload = () => res({name: f.name, b64: rd.result});
+      rd.readAsDataURL(f);
+    };
+    inp.click();
+  });
 }
 
 /* ---------- 창 (알림·확인·입력) ---------- */
@@ -216,23 +258,23 @@ function dialog({title, html, buttons, cls, onOpen}){
     const ov = document.createElement("div");
     ov.className = "ov";
     ov.innerHTML = `<div class="dlg ${cls || ""}"><h3>${esc(title)}</h3><div class="bd">${html}</div><div class="ft"></div></div>`;
-    const ft = ov.querySelector(".ft");
+    const ft = $(".ft", ov);
     const close = v => { ov.remove(); document.removeEventListener("keydown", key); res(v); };
     (buttons || [{t: "확인", v: true, c: "b-blue"}]).forEach(b => {
       const el = document.createElement("button");
       el.textContent = b.t; if (b.c) el.className = b.c;
-      el.onclick = () => { if (b.check && !b.check(ov)) return; close(b.get ? b.get(ov) : b.v); };
+      el.onclick = async () => { if (b.check && !(await b.check(ov))) return; close(b.get ? b.get(ov) : b.v); };
       ft.appendChild(el);
     });
-    const key = e => {                          // Esc = 첫 번째 버튼(취소·닫기)과 같음
-      if (!document.body.contains(ov) || ov !== [...document.querySelectorAll(".ov")].pop()) return;
+    const key = e => {
+      if (!document.body.contains(ov) || ov !== $$(".ov").pop()) return;
       if (e.key === "Escape") { e.stopPropagation(); ft.firstChild.click(); }
     };
     document.addEventListener("keydown", key);
     document.body.appendChild(ov);
     ov.close = close;
     if (onOpen) onOpen(ov, close);
-    const f = ov.querySelector("input,textarea,select") || ft.lastChild;
+    const f = $("input:not([type=checkbox]):not([readonly]),textarea", ov) || ft.lastChild;
     if (f) setTimeout(() => f.focus(), 30);
   });
 }
@@ -242,16 +284,100 @@ const warnBox = msg => dialog({title: "확인하세요", html: `<pre class="red"
 const confirmBox = (msg, title, okText, danger) => dialog({title: title || "확인", html: pre(msg),
   buttons: [{t: "취소", v: false}, {t: okText || "예", v: true, c: danger ? "b-red" : "b-blue"}]});
 function ask(title, msg, init, type){
-  return dialog({title, html: `${pre(msg)}<div style="margin-top:10px"><input type="${type || "text"}" id="askv" style="width:100%" value="${esc(init ?? "")}"></div>`,
-    buttons: [{t: "취소", v: null}, {t: "확인", c: "b-blue", get: ov => ov.querySelector("#askv").value}],
-    onOpen: (ov, close) => { const i = ov.querySelector("#askv"); i.select(); i.onkeydown = e => { if (e.key === "Enter") close(i.value); }; }});
+  return dialog({title, html: `${pre(msg)}<input type="${type || "text"}" id="askv" style="width:100%" value="${esc(init ?? "")}">`,
+    buttons: [{t: "취소", v: null}, {t: "확인", c: "b-blue", get: ov => $("#askv", ov).value}],
+    onOpen: (ov, close) => { const i = $("#askv", ov); setTimeout(() => i.select(), 40); i.onkeydown = e => { if (e.key === "Enter") close(i.value); }; }});
 }
 function showErr(e){
   const m = (e && e.message) || String(e);
   return e && e.kind === "warn" ? warnBox(m) : dialog({title: "오류", html: `<pre class="red">${esc(m)}</pre>`});
 }
+const guard = fn => async (...a) => { try { return await fn(...a); } catch (e) { showErr(e); } };
 
-/* ---------- 글자 치면 걸러지는 입력칸 (목록에서 고르기 + 직접 입력) ---------- */
+/* ---------- 표 (선택·체크·더블클릭·찾기·정렬·나눠 보이기) ---------- */
+class Table {
+  constructor(box, o = {}){
+    this.box = box; this.o = Object.assign({check: true, page: 400}, o);
+    this.heads = []; this.rows = []; this.view = []; this.sel = new Set(); this.anchor = null;
+    this.q = ""; this.sc = null; this.rev = false; this.shown = 0;
+    box.classList.add("tbox");
+    box.addEventListener("click", e => this.click(e));
+    box.addEventListener("dblclick", e => this.dbl(e));
+    this.empty(o.emptyText || "");
+  }
+  empty(t){ this.box.innerHTML = `<div class="empty">${esc(t)}</div>`; }
+  set(heads, rows, keepSel){ this.heads = heads; this.rows = rows; if (!keepSel) { this.sel.clear(); this.anchor = null; } this.render(); }
+  val(i, c){ return this.o.val ? this.o.val(i, c) : this.rows[i][c]; }
+  filter(q){ this.q = String(q || "").toLowerCase(); this.render(); }
+  render(){
+    const q = this.q;
+    this.view = [];
+    for (let i = 0; i < this.rows.length; i++) {
+      if (q && !this.rows[i].some((_, c) => String(this.val(i, c)).toLowerCase().includes(q))) continue;
+      this.view.push(i);
+    }
+    if (this.sc !== null) {
+      const k = i => { const v = String(this.val(i, this.sc) ?? ""); const f = parseFloat(v.replace(/,/g, "")); return v === "" ? null : (/^-?[\d,.]+$/.test(v) && !isNaN(f) ? [0, f] : [1, v.toLowerCase()]); };
+      const filled = this.view.filter(i => k(i) !== null), emp = this.view.filter(i => k(i) === null);
+      filled.sort((a, b) => { const x = k(a), y = k(b); return (x[0] - y[0] || (x[1] < y[1] ? -1 : x[1] > y[1] ? 1 : 0)) * (this.rev ? -1 : 1); });
+      this.view = filled.concat(emp);
+    }
+    if (!this.rows.length) { this.empty(this.o.noRows || "자료가 없습니다."); this.shown = 0; return; }
+    const th = this.heads.map((h, c) => `<th class="${this.o.sort ? "sort" : ""}" data-c="${c}" title="${esc(h)}">${esc(h)}${this.sc === c ? (this.rev ? " ▼" : " ▲") : ""}</th>`).join("");
+    this.box.innerHTML = `<table class="g"><thead><tr>${this.o.check ? `<th class="ck"><input type="checkbox" class="all" title="보이는 줄 모두 선택"></th>` : ""}${th}</tr></thead><tbody></tbody></table><div class="more"></div>`;
+    this.shown = 0;
+    this.more();
+  }
+  more(){
+    const a = this.shown, b = Math.min(this.view.length, a + this.o.page);
+    $("tbody", this.box).insertAdjacentHTML("beforeend", this.view.slice(a, b).map(i => this.rowHtml(i)).join(""));
+    this.shown = b;
+    const left = this.view.length - b, m = $(".more", this.box);
+    m.innerHTML = left > 0 ? `<button>더 보기 (${Math.min(this.o.page, left).toLocaleString()}줄 더 / 남은 ${left.toLocaleString()}줄)</button>` : "";
+    if (left > 0) $("button", m).onclick = () => this.more();
+  }
+  rowHtml(i){
+    const cls = (this.o.rowCls ? this.o.rowCls(i) : "") + (this.sel.has(i) ? " sel" : "");
+    const tds = this.rows[i].map((_, c) => {
+      const v = this.val(i, c), cc = this.o.cellCls ? this.o.cellCls(i, c) : "";
+      return `<td class="${cc}" title="${esc(v)}">${esc(v)}</td>`;
+    }).join("");
+    return `<tr data-i="${i}" class="${cls}">${this.o.check ? `<td class="ck"><input type="checkbox"${this.sel.has(i) ? " checked" : ""}></td>` : ""}${tds}</tr>`;
+  }
+  refreshRow(i){ const tr = $(`tr[data-i="${i}"]`, this.box); if (tr) tr.outerHTML = this.rowHtml(i); }
+  refreshSel(){
+    $$("tbody tr", this.box).forEach(tr => { const on = this.sel.has(+tr.dataset.i); tr.classList.toggle("sel", on); const c = $("td.ck input", tr); if (c) c.checked = on; });
+    this.o.onSel && this.o.onSel();
+  }
+  picked(){ return [...this.sel].sort((a, b) => a - b); }
+  click(e){
+    const th = e.target.closest("th");
+    if (th) {
+      if (e.target.classList.contains("all")) { this.sel.clear(); if (e.target.checked) this.view.forEach(i => this.sel.add(i)); return this.refreshSel(); }
+      if (this.o.sort && th.dataset.c !== undefined) { const c = +th.dataset.c; if (this.sc === c) this.rev = !this.rev; else { this.sc = c; this.rev = false; } this.render(); }
+      return;
+    }
+    const tr = e.target.closest("tbody tr"); if (!tr) return;
+    const i = +tr.dataset.i;
+    if (e.target.closest("td.ck")) { if (e.target.tagName !== "INPUT") return; e.target.checked ? this.sel.add(i) : this.sel.delete(i); this.anchor = i; return this.refreshSel(); }
+    if (e.target.tagName === "INPUT") return;
+    if (e.shiftKey && this.anchor !== null) {
+      const a = this.view.indexOf(this.anchor), b = this.view.indexOf(i);
+      if (!e.ctrlKey && !e.metaKey) this.sel.clear();
+      this.view.slice(Math.min(a, b), Math.max(a, b) + 1).forEach(x => this.sel.add(x));
+    } else if (e.ctrlKey || e.metaKey) { this.sel.has(i) ? this.sel.delete(i) : this.sel.add(i); this.anchor = i; }
+    else { this.sel.clear(); this.sel.add(i); this.anchor = i; this.o.onPick && this.o.onPick(i); }
+    this.refreshSel();
+  }
+  dbl(e){
+    const td = e.target.closest("tbody td"); if (!td || td.classList.contains("ck") || e.target.tagName === "INPUT") return;
+    const tr = td.parentNode, i = +tr.dataset.i, c = [...tr.children].indexOf(td) - (this.o.check ? 1 : 0);
+    window.getSelection && window.getSelection().removeAllRanges();
+    this.o.onDbl && this.o.onDbl(i, c, td);
+  }
+}
+
+/* ---------- 글자 치면 걸러지는 입력칸 ---------- */
 class Suggest {
   constructor(input, {items = [], onPick, onChange, rows = 14} = {}){
     this.inp = input; this.items = items; this.onPick = onPick; this.onChange = onChange; this.rows = rows;
@@ -262,11 +388,7 @@ class Suggest {
     w.appendChild(b);
     b.onmousedown = e => e.preventDefault();
     b.onclick = () => { if (this.pop) this.close(); else { this.open(""); this.inp.focus(); } };
-    input.addEventListener("input", () => {
-      const t = this.get();
-      if (t !== this.last) { this.last = t; this.onChange && this.onChange(t); }
-      this.open(t);
-    });
+    input.addEventListener("input", () => { const t = this.get(); if (t !== this.last) { this.last = t; this.onChange && this.onChange(t); } this.open(t); });
     input.addEventListener("keydown", e => this.key(e));
     input.addEventListener("blur", () => setTimeout(() => this.close(), 150));
   }
@@ -275,39 +397,21 @@ class Suggest {
   setItems(items){ this.items = items; }
   open(text){
     const t = String(text || "").toUpperCase().replace(/\s/g, "");
-    this.shown = this.items.filter(([v, d]) => !t || String(v).toUpperCase().replace(/\s/g, "").includes(t)
-      || String(d).toUpperCase().replace(/\s/g, "").includes(t)).slice(0, 400);
+    this.shown = this.items.filter(([v, d]) => !t || String(v).toUpperCase().replace(/\s/g, "").includes(t) || String(d).toUpperCase().replace(/\s/g, "").includes(t)).slice(0, 400);
     if (!this.shown.length) return this.close();
-    if (!this.pop) {
-      this.pop = document.createElement("div"); this.pop.className = "sg-pop";
-      this.pop.onmousedown = e => e.preventDefault();
-      document.body.appendChild(this.pop);
-    }
+    if (!this.pop) { this.pop = document.createElement("div"); this.pop.className = "sg-pop"; this.pop.onmousedown = e => e.preventDefault(); document.body.appendChild(this.pop); }
     this.hi = -1;
     this.pop.innerHTML = this.shown.map(([v, d], i) => `<div data-i="${i}">${esc(d || v)}</div>`).join("");
     this.pop.onclick = e => { const d = e.target.closest("div[data-i]"); if (d) this.pick(+d.dataset.i); };
     const r = this.inp.parentNode.getBoundingClientRect();
-    const h = Math.min(this.rows * 29 + 4, window.innerHeight * .6);
-    const below = window.innerHeight - r.bottom - 8, above = r.top - 8;
+    const h = Math.min(this.rows * 29 + 4, window.innerHeight * .6), below = window.innerHeight - r.bottom - 8, above = r.top - 8;
     this.pop.style.left = Math.max(4, Math.min(r.left, window.innerWidth - 260)) + "px";
     this.pop.style.minWidth = r.width + "px";
     this.pop.style.maxWidth = Math.min(700, window.innerWidth - 8) + "px";
-    if (below >= Math.min(h, 160) || below >= above) {       // 칸 아래에 (자리가 모자라면 위에)
-      this.pop.style.maxHeight = Math.min(h, below) + "px";
-      this.pop.style.top = r.bottom + 2 + "px";
-    } else {
-      const mh = Math.min(h, above);
-      this.pop.style.maxHeight = mh + "px";
-      this.pop.style.top = Math.max(4, r.top - Math.min(mh, this.pop.scrollHeight) - 2) + "px";
-    }
+    if (below >= Math.min(h, 160) || below >= above) { this.pop.style.maxHeight = Math.min(h, below) + "px"; this.pop.style.top = r.bottom + 2 + "px"; }
+    else { const mh = Math.min(h, above); this.pop.style.maxHeight = mh + "px"; this.pop.style.top = Math.max(4, r.top - Math.min(mh, this.pop.scrollHeight) - 2) + "px"; }
   }
-  mark(i){
-    if (!this.pop) return;
-    const ds = this.pop.children;
-    if (ds[this.hi]) ds[this.hi].classList.remove("on");
-    this.hi = Math.max(0, Math.min(i, ds.length - 1));
-    if (ds[this.hi]) { ds[this.hi].classList.add("on"); ds[this.hi].scrollIntoView({block: "nearest"}); }
-  }
+  mark(i){ if (!this.pop) return; const ds = this.pop.children; if (ds[this.hi]) ds[this.hi].classList.remove("on"); this.hi = Math.max(0, Math.min(i, ds.length - 1)); if (ds[this.hi]) { ds[this.hi].classList.add("on"); ds[this.hi].scrollIntoView({block: "nearest"}); } }
   key(e){
     if (e.key === "ArrowDown") { e.preventDefault(); if (!this.pop) this.open(this.get()); this.mark(this.hi + 1); }
     else if (e.key === "ArrowUp") { e.preventDefault(); this.mark(this.hi - 1); }
@@ -317,150 +421,11 @@ class Suggest {
       else if (this.shown.length === 1) { e.preventDefault(); e.stopPropagation(); this.pick(0); }
     }
   }
-  pick(i){
-    const it = this.shown[i]; if (!it) return;
-    this.set(it[0]); this.close(); this.inp.focus();
-    this.onPick && this.onPick(it[0]);
-  }
+  pick(i){ const it = this.shown[i]; if (!it) return; this.set(it[0]); this.close(); this.inp.focus(); this.onPick && this.onPick(it[0]); }
   close(){ if (this.pop) { this.pop.remove(); this.pop = null; } }
 }
 
-/* ============================================================
-   ③ 작업지시 표
-   ============================================================ */
-const G = {cols: [], heads: [], names: {}, defs: {}, rows: [], rids: [], tags: [], locked: {}, sensitive: {},
-           edits: new Map(), sel: new Set(), anchor: null, shown: 0, view: [], fetched: false, info: null};
-const PAGE = 400;
-const NUM_COLS = new Set(["PLAN_QTY", "ACTUAL_QTY", "PASS_QTY", "BAD_QTY", "INPUT_QTY", "ST_VALUE"]);
-
-function filters(){
-  return {d1: $("#d1").value, d2: $("#d2").value, mc: $("#fmc").value, item: $("#fit").value, nomold: $("#fnm").checked};
-}
-
-async function fetchGrid(askFirst = true){
-  if (askFirst && G.edits.size && !await confirmBox(`저장 안 한 수정 ${G.edits.size}줄이 있습니다.\n버리고 다시 조회할까요?`)) return;
-  if (!$("#d1").value || !$("#d2").value) return warnBox("지시일을 넣으세요.");
-  try {
-    const j = await api("/api/wo/search", filters(), "MES에서 조회 중...");
-    Object.assign(G, {cols: j.cols, heads: j.heads, names: j.names, defs: j.defs, rows: j.rows, rids: j.rids,
-      tags: j.tags, locked: j.locked, sensitive: j.sensitive, fetched: true, info: j});
-    G.edits.clear(); G.sel.clear(); G.anchor = null;
-    updSave(); render();
-  } catch (e) { showErr(e); }
-}
-
-function ci(c){ return G.cols.indexOf(c); }
-function cellVal(i, c){
-  const e = G.edits.get(G.rids[i]);
-  const k = G.cols[c];
-  return e && e.changes[k] ? e.changes[k].new : G.rows[i][c];
-}
-function label(i){
-  return ["WORK_ORDER_NO", "WORK_ORDER_DATE", "MACHINE_CODE"].filter(c => ci(c) >= 0).map(c => G.rows[i][ci(c)].trim()).join(" / ");
-}
-
-function render(){
-  const box = $("#gbox");
-  if (!G.fetched) return;
-  const q = $("#fq").value.trim().toLowerCase();
-  G.view = [];
-  for (let i = 0; i < G.rows.length; i++) {
-    if (q && !G.rows[i].some((v, c) => String(cellVal(i, c)).toLowerCase().includes(q))) continue;
-    G.view.push(i);
-  }
-  G.shown = Math.min(PAGE, G.view.length);
-  if (!G.rows.length) {
-    box.innerHTML = `<div class="empty">조건에 맞는 작업지시가 없습니다.</div>`;
-  } else {
-    const th = G.cols.map((c, k) => `<th title="${esc(c)}">${esc(G.heads[k])}</th>`).join("");
-    box.innerHTML = `<table class="g" id="grid"><thead><tr><th class="ck"><input type="checkbox" id="ckAll" title="보이는 줄 모두 선택"></th>${th}</tr></thead><tbody></tbody></table><div class="more" id="more"></div>`;
-    appendRows(0, G.shown);
-    $("#ckAll").onchange = e => { G.sel.clear(); if (e.target.checked) G.view.forEach(i => G.sel.add(i)); refreshSel(); };
-  }
-  status(q);
-}
-function rowHtml(i){
-  const e = G.edits.get(G.rids[i]);
-  const tag = e ? "edit" : G.tags[i];
-  const tds = G.cols.map((c, k) => {
-    const chg = e && e.changes[c];
-    const v = chg ? chg.new : G.rows[i][k];
-    return `<td class="${chg ? "chg" : ""}${NUM_COLS.has(c) ? " num" : ""}" title="${esc(v)}">${esc(v)}</td>`;
-  }).join("");
-  return `<tr data-i="${i}" class="${tag || ""}${G.sel.has(i) ? " sel" : ""}"><td class="ck"><input type="checkbox"${G.sel.has(i) ? " checked" : ""}></td>${tds}</tr>`;
-}
-function appendRows(a, b){
-  const tb = $("#grid tbody");
-  tb.insertAdjacentHTML("beforeend", G.view.slice(a, b).map(rowHtml).join(""));
-  const more = $("#more");
-  const left = G.view.length - b;
-  more.innerHTML = left > 0 ? `<button id="bMore">더 보기 (${Math.min(PAGE, left).toLocaleString()}줄 더 / 남은 ${left.toLocaleString()}줄)</button>` : "";
-  if (left > 0) $("#bMore").onclick = () => { const s = G.shown; G.shown = Math.min(G.view.length, s + PAGE); appendRows(s, G.shown); };
-}
-function refreshRow(i){
-  const tr = document.querySelector(`#grid tr[data-i="${i}"]`);
-  if (tr) tr.outerHTML = rowHtml(i);
-}
-function refreshSel(){
-  document.querySelectorAll("#grid tbody tr").forEach(tr => {
-    const on = G.sel.has(+tr.dataset.i);
-    tr.classList.toggle("sel", on);
-    tr.querySelector("input").checked = on;
-  });
-}
-function status(q){
-  const j = G.info; if (!j) return;
-  let t = `조회 ${j.time}  ${G.rows.length.toLocaleString()}건`;
-  if (j.hit_limit) t += " (최대건수 도달 - 조건을 좁히세요)";
-  if (q) t += `  / 표에서 찾기 ${G.view.length.toLocaleString()}건`;
-  if (G.sel.size) t += `  / 선택 ${G.sel.size}줄`;
-  $("#status").innerHTML = esc(t) + (j.summary ? ` <span class="sum">※ ${esc(j.summary)}</span>` : "");
-}
-function updSave(){
-  let n = 0; G.edits.forEach(e => n += Object.keys(e.changes).length);
-  $("#bSave").textContent = `수정 저장 (${n})`;
-}
-
-/* 표 클릭: 선택 / 더블클릭: 고치기 창 또는 칸 고치기 */
-$("#gbox").addEventListener("click", e => {
-  const tr = e.target.closest("#grid tbody tr"); if (!tr) return;
-  const i = +tr.dataset.i;
-  if (e.target.closest("td.ck")) {
-    if (e.target.tagName !== "INPUT") return;
-    e.target.checked ? G.sel.add(i) : G.sel.delete(i);
-  } else if (e.shiftKey && G.anchor !== null) {
-    const a = G.view.indexOf(G.anchor), b = G.view.indexOf(i);
-    if (!e.ctrlKey && !e.metaKey) G.sel.clear();
-    G.view.slice(Math.min(a, b), Math.max(a, b) + 1).forEach(x => G.sel.add(x));
-  } else if (e.ctrlKey || e.metaKey) {
-    G.sel.has(i) ? G.sel.delete(i) : G.sel.add(i);
-    G.anchor = i;
-  } else {
-    G.sel.clear(); G.sel.add(i); G.anchor = i;
-  }
-  refreshSel(); status($("#fq").value.trim());
-});
-$("#gbox").addEventListener("dblclick", e => {
-  const td = e.target.closest("#grid tbody td"); if (!td || td.classList.contains("ck")) return;
-  const tr = td.parentNode, i = +tr.dataset.i;
-  const c = [...tr.children].indexOf(td) - 1;
-  window.getSelection && window.getSelection().removeAllRanges();
-  if (!$("#mode").checked) { G.sel.clear(); G.sel.add(i); refreshSel(); openForm(i); }
-  else editCell(i, c, td);
-});
-
-/* ---------- 수정 모드: 칸 고치기 ---------- */
-function block(col){
-  if (!$("#mode").checked) return "지금은 보기 전용입니다. 고치려면 [수정 모드]를 체크하세요.";
-  if (G.locked[col]) return G.locked[col];
-  const d = G.defs[col];
-  if (!d || !d.editable) return col.endsWith("__") ? "이 칸은 여기서 고칠 수 없습니다." : `${col} (${d ? d.dbtype : ""}) 형식은 고칠 수 없습니다.`;
-  return null;
-}
-async function confirmSens(col){
-  const m = G.sensitive[col];
-  return !m || await confirmBox(`[${G.heads[ci(col)]}]\n\n${m}\n\n그래도 고칠까요?`);
-}
+/* 칸 값 형식 검사 (서버도 다시 검사함) */
 function normalize(d, text){
   const t = String(text ?? "").trim();
   if (!t) { if (d.req) throw new Error("필수 칸이라 비울 수 없음"); return ""; }
@@ -471,8 +436,7 @@ function normalize(d, text){
     return String(f);
   }
   if (d.type === "DATE") {
-    const m = t.replace(/[./]/g, "-").match(/^(\d{4})-(\d{1,2})-(\d{1,2})(?:\s+(\d{1,2}):(\d{2})(?::\d{2})?)?$/) ||
-              t.match(/^(\d{4})(\d{2})(\d{2})$/);
+    const m = t.replace(/[./]/g, "-").match(/^(\d{4})-(\d{1,2})-(\d{1,2})(?:\s+(\d{1,2}):(\d{2})(?::\d{2})?)?$/) || t.match(/^(\d{4})(\d{2})(\d{2})$/);
     if (!m) throw new Error("날짜 아님 (예: 2026-09-30)");
     const s = `${m[1]}-${pad(+m[2])}-${pad(+m[3])}`;
     return m[4] && (+m[4] || +m[5]) ? `${s} ${pad(+m[4])}:${m[5]}` : s;
@@ -480,368 +444,440 @@ function normalize(d, text){
   if (d.maxlen && blen(t) > d.maxlen) throw new Error(`너무 김 (${blen(t)}/${d.maxlen}byte)`);
   return t;
 }
-function setEdit(i, col, text){
-  const d = G.defs[col], k = ci(col), old = G.rows[i][k], rid = G.rids[i];
-  let nv;
-  try { nv = normalize(d, text); } catch (e) { return `${G.heads[k]}: ${e.message}\n수정하지 않았습니다.`; }
-  const same = nv === old || (d.type === "NUM" && old !== "" && nv !== "" && Number(old) === Number(nv)) || (d.type === "TEXT" && old.trimEnd() === nv);
-  if (same) {
-    const e = G.edits.get(rid);
-    if (e) { delete e.changes[col]; if (!Object.keys(e.changes).length) G.edits.delete(rid); }
-  } else {
-    const e = G.edits.get(rid) || {label: label(i), i, changes: {}};
-    e.changes[col] = {old, new: nv};
-    G.edits.set(rid, e);
-  }
-  updSave();
-  return null;
-}
-async function editCell(i, c, td){
-  const col = G.cols[c];
-  const why = block(col);
-  if (why) return warnBox(why);
-  if (!await confirmSens(col)) return;
-  const cur = cellVal(i, c);
+const sameVal = (d, a, b) => a === b || (d.type === "NUM" && a !== "" && b !== "" && Number(a) === Number(b)) || (d.type === "TEXT" && String(a).trimEnd() === b);
+
+/* 표 칸 안에서 바로 고치기 */
+function inlineEdit(td, cur, done){
   const inp = document.createElement("input");
-  inp.type = "text"; inp.value = cur;
-  inp.style.cssText = "width:100%;min-width:140px;padding:2px 4px";
+  inp.type = "text"; inp.value = cur; inp.className = "cell";
   td.textContent = ""; td.appendChild(inp); td.style.overflow = "visible";
   inp.focus(); inp.select();
-  let done = false;
-  const finish = async commit => {
-    if (done) return; done = true;
-    if (commit) { const m = setEdit(i, col, inp.value); if (m) await warnBox(m); }
-    refreshRow(i);
-  };
+  let fin = false;
+  const finish = c => { if (fin) return; fin = true; done(c ? inp.value : null); };
   inp.onkeydown = e => { if (e.key === "Enter") finish(true); if (e.key === "Escape") { e.stopPropagation(); finish(false); } };
   inp.onblur = () => finish(true);
 }
 
-$("#mode").onchange = async e => {
-  if (e.target.checked) {
-    if (!await confirmBox("수정 모드를 켜면 MES의 작업지시 내용을 바꿀 수 있습니다.\n켤까요?")) e.target.checked = false;
-  }
-  $("#modeBox").classList.toggle("mode-on", e.target.checked);
-};
-
-async function saveGrid(){
-  if (!G.edits.size) return alertBox("수정한 내용이 없습니다.");
-  const lines = [];
-  G.edits.forEach(e => Object.entries(e.changes).forEach(([c, x]) => lines.push(`${e.label} · ${G.heads[ci(c)]}: '${x.old}' → '${x.new}'`)));
-  const more = lines.length > 25 ? `\n... 외 ${lines.length - 25}건` : "";
-  if (!await confirmBox("MES 작업지시에 바로 반영합니다.\n\n" + lines.slice(0, 25).join("\n") + more + "\n\n계속할까요?", "MES 수정", "저장")) return false;
-  const edits = [...G.edits.entries()].map(([rid, e]) => ({rid, changes: e.changes}));
-  try {
-    const j = await api("/api/wo/save_grid", {edits}, "MES에 저장 중...");
-    await alertBox(`${j.n}줄 수정 완료. (작업기록에 남겼습니다)`);
-    G.edits.clear(); updSave(); fetchGrid(false);
-    return true;
-  } catch (e) { showErr(e); return false; }
-}
-async function cancelEdits(){
-  if (G.edits.size && await confirmBox(`저장 안 한 수정 ${G.edits.size}줄을 되돌릴까요?`)) { G.edits.clear(); updSave(); render(); }
-}
-
-/* ---------- 선택 줄 세로로 보기 ---------- */
-function oneSel(msg){
-  if (G.sel.size !== 1) { alertBox(msg || "한 줄을 선택하세요."); return null; }
-  return [...G.sel][0];
-}
-function detail(){
-  const i = oneSel(); if (i === null) return;
-  const html = `<div class="hint" style="margin-bottom:6px">${$("#mode").checked ? "값을 누르면 수정 → 주황 = 저장 대기. [수정 저장]을 눌러야 MES에 반영됩니다." : "보기 전용 (고치려면 [수정 모드] 체크)"}</div>
-    <input type="text" id="dq" placeholder="컬럼 찾기" style="width:220px;margin-bottom:6px">
-    <div class="tbox" style="max-height:60vh"><table class="g" id="dt"><thead><tr><th>DB컬럼</th><th>이름</th><th>값</th><th>형식</th></tr></thead><tbody></tbody></table></div>`;
-  dialog({title: `작업지시 - ${label(i)}`, html, cls: "mid",
-    buttons: [{t: "닫기", v: null}, {t: "수정 저장", c: "b-green", v: "save"}],
+/* 세로로 보기 / 수정 (한 줄 전체 칸) */
+function vertical(title, rows, {note, canEdit, onEdit, onSave} = {}){
+  // rows: () => [{col, name, val, type, edited, off}]
+  return dialog({title, cls: "mid",
+    html: `<div class="hint">${esc(note || "")}</div><input type="text" class="vq" placeholder="컬럼 찾기" style="width:220px">
+      <div class="tbox fix vt"></div>`,
+    buttons: onSave ? [{t: "닫기", v: null}, {t: "수정 저장", c: "b-green", v: "save"}] : [{t: "닫기", v: null}],
     onOpen: ov => {
-      const fill = () => {
-        const q = ov.querySelector("#dq").value.trim().toLowerCase();
-        const e = G.edits.get(G.rids[i]);
-        ov.querySelector("#dt tbody").innerHTML = G.cols.map((c, k) => {
-          const nm = G.names[c] || "", v = cellVal(i, k), d = G.defs[c] || {};
-          if (q && !c.toLowerCase().includes(q) && !nm.toLowerCase().includes(q) && !String(v).toLowerCase().includes(q)) return "";
-          const cls = e && e.changes[c] ? "edit" : "";
-          return `<tr class="${cls}" data-c="${esc(c)}"><td>${esc(c)}</td><td>${esc(nm)}</td><td class="${cls ? "chg" : ""}" style="max-width:420px;white-space:normal">${esc(v)}</td><td>${esc((d.dbtype || "") + (d.req ? " 필수" : ""))}</td></tr>`;
-        }).join("");
-      };
-      ov.querySelector("#dq").oninput = fill;
-      ov.querySelector("#dt").onclick = async ev => {
-        const tr = ev.target.closest("tr[data-c]"); if (!tr) return;
-        const col = tr.dataset.c, why = block(col);
-        if (why) return warnBox(why);
-        if (!await confirmSens(col)) return;
-        const v = await ask(col, `${G.heads[ci(col)]}\n새 값을 입력하세요:`, cellVal(i, ci(col)));
-        if (v === null) return;
-        const m = setEdit(i, col, v); if (m) await warnBox(m);
-        fill(); refreshRow(i);
-      };
+      const t = new Table($(".vt", ov), {check: false, rowCls: i => cur[i].edited ? "edit" : (cur[i].off ? "off" : ""),
+        cellCls: (i, c) => c === 2 && cur[i].edited ? "chg wrap" : (c === 2 ? "wrap" : ""),
+        onDbl: async i => { if (!canEdit) return; await onEdit(cur[i].col); fill(); }});
+      let cur = [];
+      const fill = () => { cur = rows(); t.set(["DB컬럼", "이름", "값", "형식"], cur.map(r => [r.col, r.name, r.val, r.type]), true); t.filter($(".vq", ov).value); };
+      $(".vq", ov).oninput = e => t.filter(e.target.value);
       fill();
-    }}).then(v => { if (v === "save") saveGrid(); });
+    }}).then(v => { if (v === "save" && onSave) onSave(); });
 }
 
-/* ---------- 선택 줄 삭제 ---------- */
-async function deleteRows(){
-  if (!$("#mode").checked) return alertBox("삭제는 [수정 모드]를 체크해야 할 수 있습니다.");
-  if (G.edits.size) return alertBox("저장 안 한 수정이 있습니다. 먼저 [수정 저장] 또는 [수정 취소]를 하세요.");
-  const sel = [...G.sel];
-  if (!sel.length) return alertBox("삭제할 줄을 선택하세요. (왼쪽 네모 체크, 또는 Ctrl/Shift+클릭)");
-  const rids = sel.map(i => G.rids[i]);
-  try {
-    const j = await api("/api/wo/delete_check", {rids}, "실적·사용 이력 확인 중... (오래 걸릴 수 있음)");
+/* 안내 배너 */
+function banner(key){
+  const info = META.page_info[key];
+  if (!info) return "";
+  const [t, d, s] = info;
+  return `<div class="info"><div class="tx"><b class="t">${esc(t)}</b><div class="l1">${esc(d)}</div>${s ? `<div class="l2">사용 순서: ${esc(s)}</div>` : ""}</div>${key !== "help" ? `<button class="tohelp">자세한 사용법</button>` : ""}</div>`;
+}
+
+/* ============================================================
+   탭
+   ============================================================ */
+const PAGES = {};
+let CUR = null;
+const BUILD = {};
+
+function visibleTabs(){
+  const hide = new Set();
+  for (const [g, keys] of Object.entries(META.hidden)) if (!META.show[g]) keys.forEach(k => hide.add(k));
+  return META.tabs.filter(([k]) => !hide.has(k));
+}
+function renderTabs(){
+  const nav = $("#tabs");
+  const vis = visibleTabs();
+  nav.innerHTML = vis.map(([k, t]) => `<button data-k="${k}" class="${k === CUR ? "on" : ""}">${esc(t)}</button>`).join("");
+  $$("button", nav).forEach(b => b.onclick = () => showTab(b.dataset.k));
+  if (CUR && !vis.some(([k]) => k === CUR)) showTab("old");
+}
+function showTab(k){
+  if (!PAGES[k]) {
+    const sec = document.createElement("section");
+    sec.className = "page"; sec.dataset.k = k;
+    sec.innerHTML = banner(k);
+    $("#main").appendChild(sec);
+    PAGES[k] = sec;
+    const hb = $(".tohelp", sec); if (hb) hb.onclick = () => showTab("help");
+    const b = BUILD[k] || BUILD[["wo", "bom", "itemmst"].includes(k) ? "grid" : "none"];
+    b && b(sec, k);
+  }
+  CUR = k;
+  $$("section.page").forEach(s => s.classList.toggle("on", s.dataset.k === k));
+  $$("#tabs button").forEach(b => b.classList.toggle("on", b.dataset.k === k));
+  const tb = $(`#tabs button[data-k="${k}"]`); if (tb) tb.scrollIntoView({block: "nearest", inline: "nearest"});
+  PAGES[k].onShow && PAGES[k].onShow();
+  LS.set("tab", k);
+}
+
+/* ============================================================
+   공용 표 탭: ③ 작업지시 / ② 단위중량 / 품목
+   ============================================================ */
+BUILD.grid = (sec, key) => {
+  const sp = META.grids[key];
+  const S = {data: null, edits: new Map(), fetched: false};
+  const fid = n => `${key}_${n}`;
+  // 조건 칸
+  let fhtml = "";
+  for (const [fk, label, kind, def] of sp.filters) {
+    if (kind === "check") fhtml += `<label class="chk"><input type="checkbox" id="${fid(fk)}"> ${esc(label)}</label>`;
+    else if (kind === "choice") fhtml += label.map((t, j) => `<label class="chk"><input type="radio" name="${fid(fk)}" value="${j}"${j === 0 ? " checked" : ""}> ${esc(t)}</label>`).join("");
+    else if (fk === "d1" || fk === "d2") fhtml += `<span>${esc(label)}</span><input type="date" id="${fid(fk)}" value="${today()}">`;
+    else fhtml += `<span>${esc(label)}</span><input type="text" id="${fid(fk)}" style="width:${Math.max(80, (sp.filters.find(f => f[0] === fk)[4] || 12) * 9)}px">`;
+  }
+  const isWo = key === "wo";
+  sec.insertAdjacentHTML("beforeend", `
+    <div class="bar">${fhtml}<button class="b-blue g-fetch">MES에서 조회</button><span>표에서 찾기</span><input type="text" class="g-q" style="width:130px">
+      <span class="sp"></span>${sp.tools.map((t, j) => `<button class="b-blue g-tool" data-j="${j}">${esc(t)}</button>`).join("")}
+      ${sp.match ? `<button class="b-teal g-imp">엑셀로 일괄 수정</button>` : ""}<button class="b-teal g-xls">엑셀로 저장</button></div>
+    <div class="bar act">
+      ${isWo ? `<button class="b-orange b-big w-recent">최근 작업지시 불러오기</button><button class="b-green b-big w-batch">여러 건 일괄등록</button><button class="b-blue b-big w-edit">선택 작업지시 고치기</button><span class="sep"></span>` : ""}
+      <label class="chk g-modebox"><input type="checkbox" class="g-mode"> 수정 모드</label><span class="sp"></span>
+      ${sp.hide_new ? "" : `<button class="b-green b-big g-new">새로 등록</button>`}
+      <button class="b-red b-big g-del">선택 줄 삭제</button><button class="b-big g-det">선택 줄 세로로 보기</button>
+      <button class="b-green b-big g-save">수정 저장 (0)</button><button class="b-big g-cancel">수정 취소</button></div>
+    <div class="legend">${esc(sp.hint)}</div>
+    <div class="g-box"></div><div class="status g-st"></div>`);
+  const q = s => $(s, sec);
+  const mode = () => q(".g-mode").checked;
+  const T = new Table(q(".g-box"), {
+    emptyText: "[MES에서 조회]를 누르세요.", noRows: "조건에 맞는 자료가 없습니다.",
+    val: (i, c) => { const e = S.edits.get(S.data.rids[i]); const col = S.data.cols[c]; return e && e.changes[col] ? e.changes[col].new : S.data.rows[i][c]; },
+    rowCls: i => S.edits.has(S.data.rids[i]) ? "edit" : (S.data.tags[i] || ""),
+    cellCls: (i, c) => { const e = S.edits.get(S.data.rids[i]); return e && e.changes[S.data.cols[c]] ? "chg" : (S.data.defs[S.data.cols[c]] || {}).type === "NUM" ? "num" : ""; },
+    onSel: () => status(), onDbl: (i, c, td) => { if (!mode()) { T.sel.clear(); T.sel.add(i); T.refreshSel(); isWo ? woForm(i) : detail(i); } else editCell(i, c, td); }});
+  const filters = () => {
+    const f = {};
+    for (const [fk, , kind] of sp.filters) {
+      if (kind === "check") f[fk] = q("#" + fid(fk)).checked;
+      else if (kind === "choice") f[fk] = $(`input[name=${fid(fk)}]:checked`, sec).value === "1";
+      else f[fk] = q("#" + fid(fk)).value;
+    }
+    return f;
+  };
+  const label = i => S.data.rids && ["WORK_ORDER_NO", "WORK_ORDER_DATE", "MACHINE_CODE", "ITEM_CODE", "CHILD_ITEM_CODE"].filter(c => S.data.cols.includes(c)).slice(0, 3).map(c => S.data.rows[i][S.data.cols.indexOf(c)].trim()).join(" / ");
+  function updSave(){ let n = 0; S.edits.forEach(e => n += Object.keys(e.changes).length); q(".g-save").textContent = `수정 저장 (${n})`; }
+  function status(){
+    const d = S.data; if (!d) return;
+    let t = `조회 ${d.time}  ${d.rows.length.toLocaleString()}건`;
+    if (d.hit_limit) t += " (최대건수 도달 - 조건을 좁히세요)";
+    if (T.q) t += `  / 표에서 찾기 ${T.view.length.toLocaleString()}건`;
+    if (T.sel.size) t += `  / 선택 ${T.sel.size}줄`;
+    q(".g-st").innerHTML = esc(t) + (d.summary ? ` <span class="sum">※ ${esc(d.summary)}</span>` : "");
+  }
+  const fetch = guard(async (askFirst = true) => {
+    if (askFirst && S.edits.size && !await confirmBox(`저장 안 한 수정 ${S.edits.size}줄이 있습니다.\n버리고 다시 조회할까요?`)) return;
+    const d = await api("/api/grid/search", {key, f: filters()}, "MES에서 조회 중...");
+    S.data = d; S.edits.clear(); S.fetched = true; updSave();
+    T.set(d.heads, d.rows); T.filter(q(".g-q").value); status();
+    if (!d.rows.length && d.empty_msg) alertBox(d.empty_msg);
+  });
+  S.fetch = fetch;
+  function block(col){
+    if (!mode()) return "지금은 보기 전용입니다. 고치려면 [수정 모드]를 체크하세요.";
+    if (S.data.locked[col]) return S.data.locked[col];
+    const d = S.data.defs[col];
+    if (!d || !d.editable) return col.endsWith("__") ? "이 칸은 여기서 고칠 수 없습니다." : `${col} (${d ? d.dbtype : ""}) 형식은 고칠 수 없습니다.`;
+    return null;
+  }
+  const sens = async col => { const m = S.data.sensitive[col]; return !m || await confirmBox(`[${S.data.heads[S.data.cols.indexOf(col)]}]\n\n${m}\n\n그래도 고칠까요?`); };
+  function setEdit(i, col, text){
+    const d = S.data.defs[col], k = S.data.cols.indexOf(col), old = S.data.rows[i][k], rid = S.data.rids[i];
+    let nv;
+    try { nv = normalize(d, text); } catch (e) { return `${S.data.heads[k]}: ${e.message}\n수정하지 않았습니다.`; }
+    if (sameVal(d, old, nv)) { const e = S.edits.get(rid); if (e) { delete e.changes[col]; if (!Object.keys(e.changes).length) S.edits.delete(rid); } }
+    else { const e = S.edits.get(rid) || {label: label(i), changes: {}}; e.changes[col] = {old, new: nv}; S.edits.set(rid, e); }
+    updSave(); return null;
+  }
+  async function editCell(i, c, td){
+    const col = S.data.cols[c], why = block(col);
+    if (why) return warnBox(why);
+    if (!await sens(col)) return;
+    inlineEdit(td, T.val(i, c), async v => { if (v !== null) { const m = setEdit(i, col, v); if (m) await warnBox(m); } T.refreshRow(i); });
+  }
+  function one(msg){ if (T.sel.size !== 1) { alertBox(msg || "한 줄을 선택하세요."); return null; } return T.picked()[0]; }
+  function detail(i){
+    if (i === undefined) { i = one(); if (i === null) return; }
+    vertical(`${sp.title} - ${label(i)}`, () => S.data.cols.map((c, k) => ({col: c, name: S.data.names[c] || "", val: T.val(i, k),
+      type: (S.data.defs[c].dbtype || "") + (S.data.defs[c].req ? " 필수" : ""), edited: !!(S.edits.get(S.data.rids[i]) || {changes: {}}).changes[c], off: !!block(c)})),
+      {note: mode() ? "값을 더블클릭해서 수정 → 주황 = 저장 대기. [수정 저장]을 눌러야 MES에 반영됩니다." : "보기 전용 (고치려면 [수정 모드] 체크)", canEdit: true,
+       onEdit: async col => { const why = block(col); if (why) return warnBox(why); if (!await sens(col)) return;
+         const v = await ask(col, `${S.data.heads[S.data.cols.indexOf(col)]}\n새 값을 입력하세요:`, T.val(i, S.data.cols.indexOf(col)));
+         if (v === null) return; const m = setEdit(i, col, v); if (m) await warnBox(m); T.refreshRow(i); },
+       onSave: () => save()});
+  }
+  const save = guard(async () => {
+    if (!S.edits.size) return alertBox("수정한 내용이 없습니다.");
+    const lines = [];
+    S.edits.forEach(e => Object.entries(e.changes).forEach(([c, x]) => lines.push(`${e.label} · ${S.data.heads[S.data.cols.indexOf(c)]}: '${x.old}' → '${x.new}'`)));
+    if (!await confirmBox(`MES ${sp.title}에 바로 반영합니다.\n\n` + lines.slice(0, 25).join("\n") + (lines.length > 25 ? `\n... 외 ${lines.length - 25}건` : "") + "\n\n계속할까요?", "MES 수정", "저장")) return;
+    const j = await api("/api/grid/save", {key, edits: [...S.edits.entries()].map(([rid, e]) => ({rid, changes: e.changes}))}, "MES에 저장 중...");
+    await alertBox(`${j.n}줄 수정 완료. [작업기록]에 기록했습니다.`);
+    S.edits.clear(); updSave(); fetch(false);
+  });
+  q(".g-fetch").onclick = () => fetch();
+  $$("input[type=text]", q(".bar")).forEach(el => { if (!el.classList.contains("g-q")) el.onkeydown = e => { if (e.key === "Enter") fetch(); }; });
+  $$("input[type=radio]", sec).forEach(el => el.onchange = () => fetch());
+  q(".g-q").oninput = e => { T.filter(e.target.value); status(); };
+  q(".g-mode").onchange = async e => {
+    if (e.target.checked && !await confirmBox(`수정 모드를 켜면 MES의 ${sp.title} 내용을 바꿀 수 있습니다.\n켤까요?`)) e.target.checked = false;
+    q(".g-modebox").classList.toggle("mode-on", e.target.checked);
+  };
+  q(".g-save").onclick = save;
+  q(".g-cancel").onclick = async () => { if (S.edits.size && await confirmBox(`저장 안 한 수정 ${S.edits.size}줄을 되돌릴까요?`)) { S.edits.clear(); updSave(); T.render(); } };
+  q(".g-det").onclick = () => S.data && detail();
+  q(".g-xls").onclick = guard(async () => { if (!S.data) return alertBox("먼저 [MES에서 조회]를 하세요."); await apiFile("/api/grid/export", {key, f: filters()}); });
+  if (q(".g-imp")) q(".g-imp").onclick = guard(async () => {
+    if (!S.data) return alertBox("먼저 [MES에서 조회]로 고칠 줄들을 불러오세요.");
+    if (!mode()) return alertBox("[수정 모드]를 체크한 뒤 하세요.");
+    const f = await pickFile(); if (!f) return;
+    const j = await api("/api/grid/import", {key, f: filters(), b64: f.b64, name: f.name}, "엑셀 읽는 중...");
+    const ri = new Map(S.data.rids.map((r, i) => [r, i]));
+    let miss = 0;
+    for (const ch of j.changes) { const i = ri.get(ch.rid); if (i === undefined) { miss++; continue; } setEdit(i, ch.col, ch.new); }
+    T.render(); status();
+    alertBox(j.msg + (miss ? `\n\n※ 화면 목록에 없는 줄 ${miss}칸은 건너뜀 (다시 조회 후 불러오세요)` : ""));
+  });
+  $$(".g-tool", sec).forEach(b => b.onclick = guard(async () => {
+    const j = await api("/api/grid/tool", {key, i: +b.dataset.j}, "점검 중...");
+    if (j.msg) return alertBox(j.msg);
+    dialog({title: j.title, cls: "mid", html: `<pre class="red">${esc(j.note)}</pre><div class="tbox fix tt"></div>`,
+      onOpen: ov => new Table($(".tt", ov), {check: false, sort: true}).set(j.cols, j.rows)});
+  }));
+  if (q(".g-new")) q(".g-new").onclick = guard(async () => {
+    if (!mode()) return alertBox("새로 등록은 [수정 모드]를 체크해야 할 수 있습니다.");
+    if (!S.data) return alertBox("먼저 [MES에서 조회]를 하세요. (표 구조를 읽어야 합니다)");
+    const one1 = T.sel.size === 1 ? T.picked()[0] : null;
+    if (one1 === null && !await confirmBox("선택한 줄이 없습니다. 빈 양식으로 시작할까요?\n(비슷한 줄을 선택하고 누르면 그 값을 복사해서 시작합니다)")) return;
+    const rid = one1 === null ? null : S.data.rids[one1];
+    const F = await api("/api/grid/new_form", {key, rid}, "양식 준비 중...");
+    const html = `<div class="hint">${esc(F.hint)}<br>빨강 = 반드시 입력.  회색 = 자동(등록일·등록자 등).</div>
+      <div class="form">${F.cols.map(c => `<span class="lab${c.need ? " red" : ""}" title="${esc(c.col)}">${esc(c.name || c.col)}${c.need ? " *" : ""}</span>
+        <span><input type="text" data-c="${esc(c.col)}" value="${esc(c.value)}" style="width:100%"${c.kind !== "edit" ? " readonly" : ""}></span>
+        <span class="note">${esc(c.col)} · ${esc(c.dbtype)}</span>`).join("")}</div>`;
+    dialog({title: `${sp.title} 새로 등록` + (F.copied ? " (선택 줄 복사)" : ""), cls: "mid", html,
+      buttons: [{t: "취소", v: null}, {t: "MES에 등록", c: "b-green", check: async ov => {
+        const values = {}; $$("input[data-c]:not([readonly])", ov).forEach(el => values[el.dataset.c] = el.value);
+        try {
+          const p = await api("/api/grid/insert", {key, rid, values}, "확인 중...");
+          if (!await confirmBox(`MES ${sp.title}에 새 줄을 추가합니다.\n\n${p.label}\n\n기존 줄은 바꾸지 않습니다. 계속할까요?`, "새로 등록", "등록")) return false;
+          const r = await api("/api/grid/insert", {key, rid, values, confirm: true}, "MES에 등록 중...");
+          await alertBox(`새로 등록했습니다.\n${r.label}`); fetch(false); return true;
+        } catch (e) { showErr(e); return false; }
+      }}]});
+  });
+  q(".g-del").onclick = guard(async () => {
+    if (!mode()) return alertBox("삭제는 [수정 모드]를 체크해야 할 수 있습니다.");
+    if (S.edits.size) return alertBox("저장 안 한 수정이 있습니다. 먼저 [수정 저장] 또는 [수정 취소]를 하세요.");
+    const sel = T.picked();
+    if (!sel.length) return alertBox("삭제할 줄을 선택하세요. (왼쪽 네모 체크, 또는 Ctrl/Shift+클릭)");
+    const rids = sel.map(i => S.data.rids[i]);
+    const j = await apiJob("/api/grid/delete_check", {key, rids}, "실적·사용 이력 확인 중... (오래 걸릴 수 있음)");
     if (j.blocked.length) return warnBox("아래 줄은 삭제할 수 없습니다:\n\n" + j.blocked.slice(0, 15).join("\n"));
     const lines = j.lines.slice(0, 20).map(x => "  " + x).join("\n") + (j.lines.length > 20 ? `\n  ... 외 ${j.lines.length - 20}줄` : "");
     let typed = "";
     if (j.used.length) {
       typed = await ask("삭제 확인", `삭제할 줄:\n${lines}\n\n※ 다른 테이블에 연결된 기록이 있습니다:\n${j.used.slice(0, 15).map(x => "  " + x).join("\n")}\n\n그래도 지우려면 '삭제'라고 입력하세요:`, "");
       if ((typed || "").trim() !== "삭제") return;
-    } else if (!await confirmBox(`MES 작업지시에서 아래 ${rids.length}줄을 삭제합니다.\n\n${lines}\n\n삭제한 내용은 서버의 백업 파일에 저장됩니다. 계속할까요?`, "줄 삭제", "삭제", true)) return;
-    const r = await api("/api/wo/delete", {rids, used: j.used.length > 0, typed}, "삭제 중...");
-    await alertBox(`${r.n}줄 삭제 완료. (서버에 백업했습니다)`);
-    fetchGrid(false);
-  } catch (e) { showErr(e); }
-}
+    } else if (!await confirmBox(`MES ${sp.title}에서 아래 ${rids.length}줄을 삭제합니다.\n\n${lines}\n\n삭제한 내용은 백업 파일에 저장됩니다. 계속할까요?`, "줄 삭제", "삭제", true)) return;
+    const r = await api("/api/grid/delete", {key, rids, used: j.used.length > 0, typed}, "삭제 중...");
+    await alertBox(`${r.n}줄 삭제 완료. (백업했습니다)`); fetch(false);
+  });
+  if (isWo) {
+    q(".w-edit").onclick = () => { if (!S.data) return alertBox("고칠 작업지시 1줄을 선택하세요. (먼저 [MES에서 조회])"); const i = one("고칠 작업지시 1줄을 선택하세요."); if (i !== null) woForm(i); };
+    q(".w-recent").onclick = guard(openRecent);
+    q(".w-batch").onclick = guard(() => openBatch());
+    sec.refetch = () => S.fetched && fetch(false);
+  }
+  async function woForm(i){
+    if (S.edits.size) return alertBox("표에서 고친 뒤 저장 안 한 내용이 있습니다. 먼저 [수정 저장] 또는 [수정 취소]를 하세요.");
+    openWoForm(S.data.rids[i], () => fetch(false));
+  }
+  if (sp.auto_fetch) sec.onShow = () => { if (!S.fetched) { S.fetched = true; fetch(false); } };
+  window.addEventListener("beforeunload", e => { if (S.edits.size) { e.preventDefault(); e.returnValue = ""; } });
+};
 
-/* ---------- 엑셀로 저장 ---------- */
-async function exportXls(){
-  if (!G.fetched) return alertBox("먼저 [MES에서 조회]를 하세요.");
-  try {
-    const r = await api("/api/wo/export", filters(), "엑셀 만드는 중...");
-    const blob = await r.blob();
-    const cd = r.headers.get("Content-Disposition") || "";
-    const m = cd.match(/filename\*=UTF-8''([^;]+)/);
-    const a = document.createElement("a");
-    a.href = URL.createObjectURL(blob);
-    a.download = m ? decodeURIComponent(m[1]) : "작업지시.xlsx";
-    document.body.appendChild(a); a.click(); a.remove();
-    setTimeout(() => URL.revokeObjectURL(a.href), 5000);
-  } catch (e) { showErr(e); }
-}
-
-/* ============================================================
-   작업지시 고치기 창 (기존 WoForm)
-   ============================================================ */
-async function openForm(i){
-  if (i === undefined) { i = oneSel("고칠 작업지시 1줄을 선택하세요. (먼저 [MES에서 조회])"); if (i === null) return; }
-  if (G.edits.size) return alertBox("표에서 고친 뒤 저장 안 한 내용이 있습니다. 먼저 [수정 저장] 또는 [수정 취소]를 하세요.");
-  const rid = G.rids[i];
+/* ---------- 작업지시 고치기 창 (기존 WoForm) ---------- */
+async function openWoForm(rid, after){
   let F;
   try { F = await api("/api/wo/form", {rid}, "작업지시 읽는 중..."); } catch (e) { return showErr(e); }
   const o = F.row;
-  const mcList = F.machines.map(([a, b]) => [a, b ? `${a} | ${b}` : a]);
-  const mc0 = o.MACHINE_CODE || "";
+  const mcList = F.machines.map(([a, b]) => b ? `${a} | ${b}` : a);
   const doneTxt = Object.keys(F.done).length ? "실적 있음: " + Object.entries(F.done).map(([c, v]) => `${c}=${v}`).join(", ") : "실적 없음";
-  const st = (c, lab) => o.hasOwnProperty(c) ? `<span class="lab">${lab}</span><input type="text" id="f_${c}" list="l_${c}" value="${esc(o[c])}" style="width:140px">
-      <datalist id="l_${c}">${(F.status[c] || []).map(x => `<option value="${esc(x)}">`).join("")}</datalist>
-      <span class="note">바꾸면 현장 화면에서 보이거나 사라질 수 있음</span>` : "";
-  const html = `<div class="info" style="margin-bottom:12px"><div class="l1">바꿀 칸만 고치고 [수정 저장]. 바뀐 칸만 저장하며, 그 사이 다른 곳에서 바뀌었으면 저장하지 않습니다.<br>품번을 바꾸면 금형이, 설비를 바꾸면 설비명이 MES에서 자동으로 바뀝니다.</div></div>
+  const st = (c, lab) => o.hasOwnProperty(c) ? `<span class="lab">${lab}</span><span><input type="text" id="f_${c}" list="l_${c}" value="${esc(o[c])}" style="width:140px"><datalist id="l_${c}">${(F.status[c] || []).map(x => `<option value="${esc(x)}">`).join("")}</datalist></span><span class="note">바꾸면 현장 화면에서 보이거나 사라질 수 있음</span>` : "";
+  const html = `<div class="info"><div class="tx l1">바꿀 칸만 고치고 [수정 저장]. 바뀐 칸만 저장하며, 그 사이 다른 곳에서 바뀌었으면 저장하지 않습니다.\n품번을 바꾸면 금형이, 설비를 바꾸면 설비명이 MES에서 자동으로 바뀝니다.</div></div>
     <div class="form">
-      <span class="lab">지시일</span><input type="date" id="f_date" value="${esc((o.WORK_ORDER_DATE || "").slice(0, 10))}" style="width:160px">
-      ${F.has_shift ? `<span class="lab">근무조</span><input type="text" id="f_shift" list="l_shift" value="${esc(o.WORK_SHIFT || "")}" style="width:90px"><datalist id="l_shift">${F.shifts.map(x => `<option value="${esc(x)}">`).join("")}</datalist>` : ""}
+      <span class="lab">지시일</span><span><input type="date" id="f_date" value="${esc((o.WORK_ORDER_DATE || "").slice(0, 10))}"></span>
+      ${F.has_shift ? `<span class="lab">근무조</span><span><input type="text" id="f_shift" list="l_shift" value="${esc(o.WORK_SHIFT || "")}" style="width:90px"><datalist id="l_shift">${F.shifts.map(x => `<option value="${esc(x)}">`).join("")}</datalist></span>` : ""}
       <span class="lab">품번</span><span style="display:flex;gap:6px;flex-wrap:wrap"><input type="text" id="f_item" value="${esc(o.ITEM_CODE || "")}" style="width:200px"><button type="button" id="f_find">품번 찾기</button></span>
       <span class="note" id="f_itemInfo"></span>
-      <span class="lab">설비</span><span><input type="text" id="f_mc" style="width:260px"></span>
-      <span class="note">목록에서 고르거나 설비코드 입력</span>
-      <span class="lab">계획수량</span><input type="text" id="f_qty" inputmode="numeric" value="${esc(o.PLAN_QTY || "")}" style="width:120px">
+      <span class="lab">설비</span><span><input type="text" id="f_mc" style="width:260px"></span><span class="note">목록에서 고르거나 설비코드 입력</span>
+      <span class="lab">계획수량</span><span><input type="text" id="f_qty" inputmode="numeric" value="${esc(o.PLAN_QTY || "")}" style="width:120px"></span>
       ${st("WORK_ORDER_STATUS", "상태")}${st("PLAN_STATUS", "계획상태")}
-      <span class="lab">작업지시번호</span><input type="text" value="${esc(o.WORK_ORDER_NO || "")}" readonly style="width:200px;background:#f1f3f6">
-      <span class="note">번호는 실적과 연결되어 바꿀 수 없습니다</span>
+      <span class="lab">작업지시번호</span><span><input type="text" value="${esc(o.WORK_ORDER_NO || "")}" readonly style="width:200px"></span><span class="note">번호는 실적과 연결되어 바꿀 수 없습니다</span>
     </div>
-    <div style="margin-top:12px" class="${Object.keys(F.done).length ? "red" : "hint"}">금형: ${esc(o.MOLD_CODE || "")} &nbsp; 설비명: ${esc(o.MACHINE_NAME || "")} &nbsp; ${esc(doneTxt)}</div>`;
+    <div class="${Object.keys(F.done).length ? "red" : "hint"}">금형: ${esc(o.MOLD_CODE || "")} &nbsp; 설비명: ${esc(o.MACHINE_NAME || "")} &nbsp; ${esc(doneTxt)}</div>`;
   const values = ov => {
-    const v = {WORK_ORDER_DATE: ov.querySelector("#f_date").value, ITEM_CODE: ov.querySelector("#f_item").value,
-      MACHINE_CODE: ov.querySelector("#f_mc").value.split(" | ")[0].trim(), PLAN_QTY: ov.querySelector("#f_qty").value};
-    if (F.has_shift) v.WORK_SHIFT = ov.querySelector("#f_shift").value;
-    ["WORK_ORDER_STATUS", "PLAN_STATUS"].forEach(c => { const el = ov.querySelector("#f_" + c); if (el) v[c] = el.value; });
+    const v = {WORK_ORDER_DATE: $("#f_date", ov).value, ITEM_CODE: $("#f_item", ov).value, MACHINE_CODE: $("#f_mc", ov).value.split(" | ")[0].trim(), PLAN_QTY: $("#f_qty", ov).value};
+    if (F.has_shift) v.WORK_SHIFT = $("#f_shift", ov).value;
+    ["WORK_ORDER_STATUS", "PLAN_STATUS"].forEach(c => { const el = $("#f_" + c, ov); if (el) v[c] = el.value; });
     return v;
   };
-  dialog({title: `작업지시 고치기 - ${o.WORK_ORDER_NO || ""}`, html, cls: "mid",
-    buttons: [{t: "닫기", v: null}, {t: "수정 저장", c: "b-green b-big", v: "save", check: ov => { saveForm(ov); return false; }}],
+  dialog({title: `작업지시 고치기 - ${o.WORK_ORDER_NO || ""}`, cls: "mid", html,
+    buttons: [{t: "닫기", v: null}, {t: "수정 저장", c: "b-green b-big", check: async ov => {
+      const v = values(ov);
+      try {
+        const p = await api("/api/wo/form_save", {rid, values: v, stamp: o}, "바뀔 내용 확인 중...");
+        let msg = `작업지시 ${p.no}를 아래처럼 고칩니다.\n\n` + p.lines.map(x => `  ${x.name}: ${x.old || "(빈칸)"} → ${x.new || "(빈칸)"}`).join("\n");
+        if (p.warn.length) msg += "\n\n※ 확인하세요:\n  " + p.warn.join("\n  ");
+        if (!await confirmBox(msg + "\n\n저장할까요?", "작업지시 수정", "저장", p.warn.length > 0)) return false;
+        const r = await api("/api/wo/form_save", {rid, values: v, stamp: o, confirm: true}, "MES에 저장 중...");
+        await alertBox(`저장했습니다: ${r.no}\n\n금형: ${r.mold}   설비명: ${r.mname}`);
+        after && after(); return true;
+      } catch (e) { showErr(e); return false; }
+    }}],
     onOpen: ov => {
-      const mcInp = ov.querySelector("#f_mc");
-      mcInp.value = (mcList.find(x => x[0] === mc0) || [0, mc0])[1];
-      new Suggest(mcInp, {items: mcList.map(([a, d]) => [d, d]), rows: 16});
+      const mcInp = $("#f_mc", ov);
+      mcInp.value = mcList.find(x => x.split(" | ")[0] === (o.MACHINE_CODE || "")) || (o.MACHINE_CODE || "");
+      new Suggest(mcInp, {items: mcList.map(x => [x, x]), rows: 16});
+      const it = $("#f_item", ov);
       const lookup = async quiet => {
-        const it = ov.querySelector("#f_item").value.trim(), n = ov.querySelector("#f_itemInfo");
-        if (!it) { n.textContent = ""; return; }
+        const n = $("#f_itemInfo", ov), v = it.value.trim();
+        if (!v) { n.textContent = ""; return; }
         try {
-          const j = await api("/api/item/lookup", {item: it}, "품번 확인 중...");
-          if (!j.n) { n.textContent = `품목 마스터에 없는 품번입니다: ${it}`; n.className = "note bad"; return; }
+          const j = await api("/api/item/lookup", {item: v}, "품번 확인 중...");
+          if (!j.n) { n.textContent = `품목 마스터에 없는 품번입니다: ${v}`; n.className = "note bad"; return; }
           const parts = [`품명: ${j.name}`, j.mold ? `금형: ${j.mold} (자동으로 들어감)` : "금형 연결 없음 → 금형이 '*'로 들어갑니다. [① 금형·품번 관리]에서 먼저 연결하세요"];
           if (j.last_mc) parts.push(`최근 설비: ${j.last_mc}`);
           n.textContent = parts.join("   "); n.className = "note " + (j.mold ? "good" : "bad");
         } catch (e) { if (!quiet) showErr(e); }
       };
-      const it = ov.querySelector("#f_item");
       it.onkeydown = e => { if (e.key === "Enter") lookup(); };
       it.onchange = () => lookup(true);
-      ov.querySelector("#f_find").onclick = async () => { const v = await findItem(it.value); if (v !== null) { it.value = v; lookup(); } };
+      $("#f_find", ov).onclick = async () => { const v = await findItem(it.value, "/api/item/find", true); if (v !== null) { it.value = v; lookup(); } };
       lookup(true);
     }});
-
-  async function saveForm(ov){
-    const v = values(ov);
-    try {
-      const p = await api("/api/wo/form_save", {rid, values: v, stamp: o, confirm: false}, "바뀔 내용 확인 중...");
-      let msg = `작업지시 ${p.no}를 아래처럼 고칩니다.\n\n` + p.lines.map(x => `  ${x.name}: ${x.old || "(빈칸)"} → ${x.new || "(빈칸)"}`).join("\n");
-      if (p.warn.length) msg += "\n\n※ 확인하세요:\n  " + p.warn.join("\n  ");
-      if (!await confirmBox(msg + "\n\n저장할까요?", "작업지시 수정", "저장", p.warn.length > 0)) return;
-      const r = await api("/api/wo/form_save", {rid, values: v, stamp: o, confirm: true}, "MES에 저장 중...");
-      ov.close(null);
-      await alertBox(`저장했습니다: ${r.no}\n\n금형: ${r.mold}   설비명: ${r.mname}`);
-      fetchGrid(false);
-    } catch (e) { showErr(e); }
-  }
 }
-
-async function findItem(q){
+async function findItem(q, path, moldCol){
   let j;
-  try { j = await api("/api/item/find", {q}, "품번 찾는 중..."); } catch (e) { showErr(e); return null; }
+  try { j = await api(path, {q}, "품번 찾는 중..."); } catch (e) { showErr(e); return null; }
   return dialog({title: "품번 찾기 (누르면 선택)", cls: "mid",
-    html: `<input type="text" id="fiq" value="${esc(q)}" placeholder="거르기" style="width:100%;margin-bottom:6px">
-      <div class="list" id="fil"></div><div class="hint" style="margin-top:6px">${j.rows.length}건 (최대 300) &nbsp; 노랑 = 금형 연결 없음</div>`,
+    html: `<input type="text" class="fq" value="${esc(q)}" placeholder="거르기" style="width:100%"><div class="list fl"></div><div class="hint">${j.rows.length}건 (최대 300)${moldCol ? " &nbsp; 노랑 = 금형 연결 없음" : ""}</div>`,
     buttons: [{t: "닫기", v: null}],
     onOpen: (ov, close) => {
-      const fill = () => {
-        const t = ov.querySelector("#fiq").value.trim().toUpperCase();
-        ov.querySelector("#fil").innerHTML = j.rows.filter(r => !t || (r[0] + " " + r[1]).toUpperCase().includes(t))
-          .map(r => `<div data-v="${esc(r[0])}" class="${r[2] ? "" : "w"}"><b>${esc(r[0])}</b> &nbsp; ${esc(r[1])} &nbsp; <span class="hint">금형 ${esc(r[2] || "(없음)")}</span></div>`).join("");
-      };
-      ov.querySelector("#fiq").oninput = fill;
-      ov.querySelector("#fil").onclick = e => { const d = e.target.closest("div[data-v]"); if (d) close(d.dataset.v); };
+      const fill = () => { const t = $(".fq", ov).value.trim().toUpperCase();
+        $(".fl", ov).innerHTML = j.rows.filter(r => !t || (r[0] + " " + r[1]).toUpperCase().includes(t)).map(r =>
+          `<div data-v="${esc(r[0])}" class="${moldCol && !r[2] ? "w" : ""}"><b>${esc(r[0])}</b> &nbsp; ${esc(r[1])}${moldCol ? ` &nbsp; <span class="hint">금형 ${esc(r[2] || "(없음)")}</span>` : ""}</div>`).join(""); };
+      $(".fq", ov).oninput = fill;
+      $(".fl", ov).onclick = e => { const d = e.target.closest("div[data-v]"); if (d) close(d.dataset.v); };
       fill();
     }});
 }
 
-/* ============================================================
-   최근 작업지시 불러오기 (날짜 → 근무시간 → 일괄등록 창)
-   ============================================================ */
+/* ---------- 최근 작업지시 불러오기 ---------- */
 const hoursText = h => h == 8 ? "정상 8시간" : (h == 10 ? "잔업까지 10시간" : `${h}시간 (직접 입력)`);
 async function openRecent(){
   const d = await dialog({title: "최근 작업지시 불러오기 - 기본 계획일자 선택",
-    html: `<b style="font-size:15px">적용할 작업일자를 선택하세요</b><div class="hint" style="margin:6px 0 12px">최근 30일의 호기별 최종 작업지시를 불러온 뒤<br>아래 날짜를 새 작업지시의 기본 계획일자로 사용합니다.</div>
-      <b>기본 계획일자</b> &nbsp;<input type="date" id="rd" value="${today()}">`,
-    buttons: [{t: "취소", v: null}, {t: "다음", c: "b-blue b-big", get: ov => ov.querySelector("#rd").value}]});
+    html: `<b style="font-size:15px">적용할 작업일자를 선택하세요</b><div class="hint">최근 30일의 호기별 최종 작업지시를 불러온 뒤<br>아래 날짜를 새 작업지시의 기본 계획일자로 사용합니다.</div>
+      <div><b>기본 계획일자</b> &nbsp;<input type="date" id="rd" value="${today()}"></div>`,
+    buttons: [{t: "취소", v: null}, {t: "다음", c: "b-blue b-big", get: ov => $("#rd", ov).value}]});
   if (!d) return;
   const h = await dialog({title: "최근 작업지시 불러오기 - 근무 기준 선택",
     html: `<div style="color:var(--title);font-weight:bold">계획일자 ${esc(d)}</div><b style="font-size:15px">어느 근무시간까지 작업지시를 만들까요?</b>
-      <div class="hint" style="margin:6px 0 12px">선택한 시간 기준으로 최근 SPM × 근무시간 × 캐비티를 계산해<br>계획수량을 미리 배분합니다. 아직 MES에는 등록되지 않습니다.</div>
+      <div class="hint">선택한 시간 기준으로 최근 SPM × 근무시간 × 캐비티를 계산해<br>계획수량을 미리 배분합니다. 아직 MES에는 등록되지 않습니다.</div>
       <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="b-blue b-big" data-h="8" style="flex:1">정상까지 (8시간)</button><button class="b-orange b-big" data-h="10" style="flex:1">잔업까지 (10시간)</button></div>
-      <div style="margin-top:12px"><b>직접 입력</b> &nbsp;<input type="text" id="rh" inputmode="decimal" class="small"> 시간 &nbsp;<button id="rhb">이 시간으로</button></div>`,
+      <div><b>직접 입력</b> &nbsp;<input type="text" id="rh" inputmode="decimal" class="small"> 시간 &nbsp;<button id="rhb">이 시간으로</button></div>`,
     buttons: [{t: "취소", v: null}],
     onOpen: (ov, close) => {
-      ov.querySelectorAll("button[data-h]").forEach(b => b.onclick = () => close(+b.dataset.h));
-      const man = () => {
-        const v = parseFloat(ov.querySelector("#rh").value.replace(/,/g, ""));
-        if (!(v > 0 && v <= 24)) return warnBox("근무시간은 0보다 크고 24 이하인 숫자로 넣으세요. (예: 9, 11.5)");
-        close(v);
-      };
-      ov.querySelector("#rhb").onclick = man;
-      ov.querySelector("#rh").onkeydown = e => { if (e.key === "Enter") man(); };
+      $$("button[data-h]", ov).forEach(b => b.onclick = () => close(+b.dataset.h));
+      const man = () => { const v = parseFloat($("#rh", ov).value.replace(/,/g, "")); if (!(v > 0 && v <= 24)) return warnBox("근무시간은 0보다 크고 24 이하인 숫자로 넣으세요. (예: 9, 11.5)"); close(v); };
+      $("#rhb", ov).onclick = man; $("#rh", ov).onkeydown = e => { if (e.key === "Enter") man(); };
     }});
   if (h) openBatch(h, d);
 }
 
-/* ============================================================
-   여러 건 일괄등록 (기존 WoBatch)
-   ============================================================ */
+/* ---------- 여러 건 일괄등록 (기존 WoBatch) ---------- */
 const BCOLS = ["No", "설비(입력)", "계획일자", "교대조", "품번", "계획수량", "순위", "설비코드", "품명", "금형", "작업지시번호", "상태", "최근작업일", "최근SPM"];
-let L = null;                                   // 설비·품번 목록 (한 번 읽으면 계속 씀)
-
+let LISTS = null;
 function parseLooseDate(t){
   t = String(t || "").trim().split(" ")[0];
   if (!t) return null;
   let m;
   if ((m = t.match(/^(\d{1,2})[/.-](\d{1,2})$/))) return `${new Date().getFullYear()}-${pad(+m[1])}-${pad(+m[2])}`;
-  if (/^\d{5}(\.0)?$/.test(t)) { const d = new Date(Date.UTC(1899, 11, 30) + parseInt(t) * 864e5); return d.toISOString().slice(0, 10); }
+  if (/^\d{5}(\.0)?$/.test(t)) return new Date(Date.UTC(1899, 11, 30) + parseInt(t) * 864e5).toISOString().slice(0, 10);
   if ((m = t.match(/^(\d{4})(\d{2})(\d{2})$/)) || (m = t.match(/^(\d{4})\D(\d{1,2})\D(\d{1,2})$/))) return `${m[1]}-${pad(+m[2])}-${pad(+m[3])}`;
   return null;
 }
-
 async function openBatch(recentHours, recentDate){
-  if (!L) {
+  if (!LISTS) {
     try {
       const j = await api("/api/batch/lists", {}, "설비·품번 목록 읽는 중...");
-      const machines = j.machines;
-      L = {machines, mc_items: j.mc_items, item_mcs: j.item_mcs, item_names: {}, item_last: {}};
-      L.mc_all = Object.entries(machines).map(([c, n]) => [n || c, `${n || c}   (${c})`]).sort((a, b) => a[0].localeCompare(b[0], "ko"));
-      L.item_list = j.items.map(([k, nm, mc]) => {
-        L.item_names[k] = nm; if (mc) L.item_last[k.toUpperCase()] = mc;
-        const mn = machines[mc] || mc;
-        return [k, `${k}   |  ${nm || "-"}` + (mn ? `   |  최근 ${mn}` : "")];
-      });
-    } catch (e) {
-      await warnBox("설비·품번 목록을 읽지 못했습니다 (직접 입력은 됩니다).\n" + e.message);
-      L = null;
-    }
+      const L = {machines: j.machines, mc_items: j.mc_items, item_mcs: j.item_mcs, names: {}, last: {}};
+      L.mc_all = Object.entries(j.machines).map(([c, n]) => [n || c, `${n || c}   (${c})`]).sort((a, b) => a[0].localeCompare(b[0], "ko"));
+      L.item_list = j.items.map(([k, nm, mc]) => { L.names[k] = nm; if (mc) L.last[k.toUpperCase()] = mc; const mn = j.machines[mc] || mc; return [k, `${k}   |  ${nm || "-"}` + (mn ? `   |  최근 ${mn}` : "")]; });
+      LISTS = L;
+    } catch (e) { await warnBox("설비·품번 목록을 읽지 못했습니다 (직접 입력은 됩니다).\n" + e.message); }
   }
-  const LL = L || {machines: {}, mc_items: {}, item_mcs: {}, item_names: {}, item_last: {}, mc_all: [], item_list: []};
-  const B = {rows: [], checked: false, sort: null, rev: false, sel: new Set(), hours: recentHours || null, spm: [null, 1, ""]};
-  const recent = !!recentHours;
-  const plan = recentDate || today();
+  const LL = LISTS || {machines: {}, mc_items: {}, item_mcs: {}, names: {}, last: {}, mc_all: [], item_list: []};
+  const B = {rows: [], sel: new Set(), hours: recentHours || null, spm: [null, 1, ""], applied: false, sort: null, rev: false};
+  const recent = !!recentHours, plan = recentDate || today();
   const head = recent
     ? `<b class="t">최근 30일 작업지시 불러오기 - 계획일자 ${esc(plan)} / ${esc(hoursText(recentHours))} 기준 (아직 MES 미등록)</b>
-       <div class="l1">최근 30일 작업지시에서 호기마다 마지막 1건(품번)을 불러옵니다. 계획수량 = SPM(SPM 관리 값, 없으면 최근 생산 기록) × 60 × 근무시간 × 캐비티<br>
-       필요 없는 줄 = [선택 줄 빼기], 바꿀 줄 = [선택 줄 수정] 또는 칸 더블클릭. [작업지시 반영]을 누르기 전까지 MES는 바뀌지 않습니다.<br>
-       순서: 고치기·빼기 → [검사] → [W/O 번호생성] → 번호·상태 확인 → [작업지시 반영]</div>`
+       <div class="l1">최근 30일 작업지시에서 호기마다 마지막 1건(품번)을 불러옵니다. 계획수량 = SPM(⑤ SPM 관리 값, 없으면 최근 생산 기록) × 60 × 근무시간 × 캐비티
+필요 없는 줄 = [선택 줄 빼기], 바꿀 줄 = [선택 줄 수정] 또는 칸 더블클릭. [작업지시 반영]을 누르기 전까지 MES는 바뀌지 않습니다.
+순서: 고치기·빼기 → [검사] → [W/O 번호생성] → 번호·상태 확인 → [작업지시 반영]</div>`
     : `<b class="t">작업지시 여러 건 일괄등록 - 설비명·품번·계획수량만 넣으면 됩니다 (MES 작업지시일괄처리와 같은 방식)</b>
-       <div class="l1">[빠른 입력]: 설비 고르기 → 그 설비에서 최근 2년 만든 품번 목록 → 품번 고르면 SPM × 근무시간으로 수량 자동 → Enter = 추가<br>
-       엑셀에서 설비명·품번·수량 3칸(또는 MES 양식: 라인·계획일자·교대조·품목코드·계획수량·순위)을 복사해 이 화면에서 Ctrl+V 해도 됩니다.<br>
-       → [검사] → [W/O 번호생성] → [작업지시 반영]. 칸 더블클릭 = 고치기</div>`;
-  const html = `<div class="bt">
-    <div class="info">${head}
-      <div class="lg" style="margin-top:6px"><b>행 색상 ([검사] 후):</b><span style="background:var(--ok)">초록 = 정상</span><span style="background:var(--dup)">하늘 = 같은 날 이 품번 작업지시가 이미 있음</span><span style="background:var(--warn)">노랑 = 확인 필요 (금형 연결 없음 / 소재중량 없음 / 표 안 중복)</span><span style="background:var(--err)">빨강 = 오류, 반영 안 됨</span></div></div>
+       <div class="l1">[빠른 입력]: 설비 고르기 → 그 설비에서 최근 2년 만든 품번 목록 → 품번 고르면 SPM × 근무시간으로 수량 자동 → Enter = 추가
+엑셀에서 설비명·품번·수량 3칸(또는 MES 양식: 라인·계획일자·교대조·품목코드·계획수량·순위)을 복사해 이 화면에서 Ctrl+V 해도 됩니다.
+→ [검사] → [W/O 번호생성] → [작업지시 반영].  칸 더블클릭 = 고치기</div>`;
+  const html = `<div class="info"><div class="tx">${head}
+      <div class="lg" style="margin-top:4px"><b>행 색상 ([검사] 후):</b><span style="background:var(--ok)">초록 = 정상</span><span style="background:var(--dup)">하늘 = 같은 날 이 품번 작업지시가 이미 있음 (중복 확인)</span><span style="background:var(--warn)">노랑 = 확인 필요 (금형 연결 없음 / 소재중량 없음 / 표 안 중복)</span><span style="background:var(--err)">빨강 = 오류, 반영 안 됨</span></div></div></div>
     <div class="bar"><b>기본 계획일자</b><input type="date" id="b_def" value="${esc(plan)}"><b>기본 교대조</b><input type="text" id="b_shift" list="b_shl" value="1" class="tiny"><datalist id="b_shl"><option value="1"><option value="2"><option value="3"></datalist></div>
-    <div class="qf"><span class="t">빠른 입력</span>
-      <span>설비</span><input type="text" id="q_mc" style="width:120px">
-      <label class="chk"><input type="checkbox" id="q_allmc"> 전체 설비</label>
-      <label class="chk"><input type="checkbox" id="q_allit"> 전체 품번</label>
-      <span>품번</span><input type="text" id="q_it" style="width:170px">
-      <span>근무</span>
-      <label class="chk"><input type="radio" name="q_h" value="8"${recent ? " disabled" : ""}> 정상 8h</label>
-      <label class="chk"><input type="radio" name="q_h" value="10"${recent ? " disabled" : ""}> 잔업 10h</label>
+    <div class="qf"><span class="t">빠른 입력</span><span>설비</span><input type="text" id="q_mc" style="width:120px">
+      <label class="chk"><input type="checkbox" id="q_allmc"> 전체 설비</label><label class="chk"><input type="checkbox" id="q_allit"> 전체 품번</label>
+      <span>품번</span><input type="text" id="q_it" style="width:170px"><span>근무</span>
+      <label class="chk"><input type="radio" name="q_h" value="8"${recent ? " disabled" : ""}> 정상 8h</label><label class="chk"><input type="radio" name="q_h" value="10"${recent ? " disabled" : ""}> 잔업 10h</label>
       <span>직접</span><input type="text" id="q_hman" class="tiny" inputmode="decimal"${recent ? " disabled" : ""}><span>h</span>
       <span>SPM</span><input type="text" id="q_spm" class="tiny" inputmode="decimal"><span class="hint" id="q_src"></span>
-      <span>수량</span><input type="text" id="q_qty" class="small" inputmode="numeric">
-      <button class="b-orange" id="q_add">+ 추가</button><button id="q_reset">↺ 처음부터</button>
-    </div>
-    <div class="bar">
-      <button id="b_paste">붙여넣기 (Ctrl+V)</button><button id="b_editsel">선택 줄 수정</button><button id="b_delsel">선택 줄 빼기</button><button id="b_clear">모두 비우기</button>
-      <span class="sp"></span>
-      <button class="b-blue b-big" id="b_check">검사</button><button class="b-blue b-big" id="b_no">W/O 번호생성</button><button class="b-green b-big" id="b_apply">작업지시 반영</button>
-    </div>
-    <div class="tbox" id="b_box"></div>
-    <div class="status" id="b_lbl">엑셀에서 복사한 뒤 이 화면을 누르고 Ctrl+V 를 누르세요.</div>
-  </div>`;
-
+      <span>수량</span><input type="text" id="q_qty" class="small" inputmode="numeric"><button class="b-orange" id="q_add">+ 추가</button><button id="q_reset">↺ 처음부터</button></div>
+    <div class="bar"><button id="b_paste">붙여넣기 (Ctrl+V)</button><button id="b_editsel">선택 줄 수정</button><button id="b_delsel">선택 줄 빼기</button><button id="b_clear">모두 비우기</button>
+      <span class="sp"></span><button class="b-blue b-big" id="b_check">검사</button><button class="b-blue b-big" id="b_no">W/O 번호생성</button><button class="b-green b-big" id="b_apply">작업지시 반영</button></div>
+    <div id="b_box" style="flex:1;display:flex;min-height:200px"></div>
+    <div class="status" id="b_lbl">엑셀에서 복사한 뒤 이 화면을 누르고 Ctrl+V 를 누르세요.</div>`;
   dialog({title: recent ? "최근 30일 작업지시 - 등록 예정" : "작업지시 여러 건 일괄등록", html, cls: "wide",
     buttons: [{t: "닫기", v: null, check: () => !B.rows.length || B.applied || confirm("등록 예정 목록이 있습니다. 닫을까요? (MES에는 아직 안 들어갔습니다)")}],
     onOpen: ov => setup(ov)});
 
   function setup(ov){
-    const q = s => ov.querySelector(s);
-    const lbl = t => q("#b_lbl").textContent = t;
+    const q = s => $(s, ov), lbl = t => q("#b_lbl").textContent = t;
     const defDate = () => q("#b_def").value, defShift = () => q("#b_shift").value.trim();
-    const hRadios = [...ov.querySelectorAll("input[name=q_h]")];
-    const hours = () => {
-      const man = parseFloat(q("#q_hman").value.replace(/,/g, ""));
-      if (man > 0 && man <= 24) return man;
-      const r = hRadios.find(x => x.checked);
-      return r ? +r.value : (B.hours || 8);
-    };
-    if (recent) { if (recentHours == 8 || recentHours == 10) hRadios.find(x => +x.value === recentHours).checked = true; else q("#q_hman").value = recentHours; }
-    else hRadios[0].checked = true;
-
-    /* ----- 빠른 입력 ----- */
+    const hR = $$("input[name=q_h]", ov);
+    const hours = () => { const m = parseFloat(q("#q_hman").value.replace(/,/g, "")); if (m > 0 && m <= 24) return m; const r = hR.find(x => x.checked); return r ? +r.value : (B.hours || 8); };
+    if (recent) { if (recentHours == 8 || recentHours == 10) hR.find(x => +x.value === recentHours).checked = true; else q("#q_hman").value = recentHours; } else hR[0].checked = true;
+    const T = new Table(q("#b_box"), {sort: true, page: 2000, noRows: "아직 줄이 없습니다. 빠른 입력 또는 엑셀 붙여넣기(Ctrl+V)로 넣으세요.",
+      rowCls: i => B.rows[i].lv || "", cellCls: (i, c) => [5, 6].includes(c) ? "num" : (c === 11 ? "wrap" : ""),
+      onDbl: (i, c) => editCell(i, c)});
+    T.box.style.flex = "1";
+    const show = () => T.set(BCOLS, B.rows.map((r, i) => [i + 1, r.line, r.date_t || `(${defDate()})`, r.shift || `(${defShift()})`, r.item, r.qty_t, r.prio || r.prio_auto || "",
+      r.mc || "", r.iname || "", r.mold || "", r.no || "", r.st || "", (r.recent_date || "").slice(0, 10), r.spm ? Number(r.spm).toFixed(1) : ""]), true);
+    const clearDerived = r => ["mc", "mname", "iname", "mold", "date", "qty", "shift_v", "prio_auto", "no"].forEach(k => delete r[k]);
+    const dirty = () => B.rows.forEach(r => { r.no = ""; });
+    /* 빠른 입력 */
     const fm = new Suggest(q("#q_mc"), {items: LL.mc_all, rows: 30, onPick: onMcPick, onChange: () => { if (!curMc()) fi.setItems(LL.item_list); }});
     const fi = new Suggest(q("#q_it"), {items: LL.item_list, onPick: onItemPick, onChange: () => fm.setItems(LL.mc_all)});
-    function curMc(){
-      const t = fm.get();
-      if (LL.machines.hasOwnProperty(t)) return t;
-      const n = t.replace(/\s/g, "").toUpperCase();
-      for (const [c, nm] of Object.entries(LL.machines)) if (nm && nm.replace(/\s/g, "").toUpperCase() === n) return c;
-      return "";
-    }
+    function curMc(){ const t = fm.get(); if (LL.machines.hasOwnProperty(t)) return t; const n = t.replace(/\s/g, "").toUpperCase(); for (const [c, nm] of Object.entries(LL.machines)) if (nm && nm.replace(/\s/g, "").toUpperCase() === n) return c; return ""; }
     function refreshMachines(item){
       item = (item === undefined ? fi.get() : item).toUpperCase();
       const hist = item ? LL.item_mcs[item] : null;
@@ -851,235 +887,116 @@ async function openBatch(recentHours, recentDate){
     }
     function refreshItems(){
       const mc = curMc();
-      if (q("#q_allit").checked || !mc || !LL.mc_items[mc]) { fi.setItems(LL.item_list); return; }
-      fi.setItems(LL.mc_items[mc].map(([it, n, last]) => [it, `${it}   |  ${LL.item_names[it] || "-"}   |  ${n}회` + (last ? `, 마지막 ${last.slice(5, 10).replace("-", "/")}` : "")]));
+      if (q("#q_allit").checked || !mc || !LL.mc_items[mc]) return fi.setItems(LL.item_list);
+      fi.setItems(LL.mc_items[mc].map(([it, n, last]) => [it, `${it}   |  ${LL.names[it] || "-"}   |  ${n}회` + (last ? `, 마지막 ${last.slice(5, 10).replace("-", "/")}` : "")]));
     }
-    function onMcPick(){
-      refreshItems();
-      const it = fi.get().toUpperCase(), mc = curMc();
-      if (it && mc && (LL.item_mcs[it] || []).some(x => x[0] === mc)) return updateSpm(it);
-      fi.set(""); refreshMachines(""); q("#q_it").focus(); fi.open("");
-    }
+    function onMcPick(){ refreshItems(); const it = fi.get().toUpperCase(), mc = curMc(); if (it && mc && (LL.item_mcs[it] || []).some(x => x[0] === mc)) return updateSpm(it); fi.set(""); refreshMachines(""); q("#q_it").focus(); fi.open(""); }
     function onItemPick(item){
       item = item.toUpperCase();
-      const hist = refreshMachines(item);
-      const mc = curMc();
+      const hist = refreshMachines(item), mc = curMc();
       if (hist.length && !q("#q_allmc").checked && !hist.some(x => x[0] === mc)) fm.set(LL.machines[hist[0][0]] || hist[0][0]);
-      else if (!hist.length && !fm.get() && LL.item_last[item]) fm.set(LL.machines[LL.item_last[item]] || LL.item_last[item]);
+      else if (!hist.length && !fm.get() && LL.last[item]) fm.set(LL.machines[LL.last[item]] || LL.last[item]);
       updateSpm(item);
     }
     async function updateSpm(item){
       try { const j = await api("/api/batch/spm", {mc: curMc(), item}, "SPM 찾는 중..."); B.spm = [j.spm, j.cav, j.src]; }
       catch (e) { B.spm = [null, 1, "SPM 조회 실패: " + e.message.slice(0, 40)]; }
-      const [spm, , src] = B.spm;
-      q("#q_spm").value = spm ? spm.toFixed(1) : "";
-      q("#q_src").textContent = src.slice(0, 60);
-      if (spm) calcQty(); else q("#q_qty").value = "";
+      q("#q_spm").value = B.spm[0] ? B.spm[0].toFixed(1) : ""; q("#q_src").textContent = B.spm[2].slice(0, 60);
+      if (B.spm[0]) calcQty(); else q("#q_qty").value = "";
       q("#q_qty").focus(); q("#q_qty").select();
     }
-    function calcQty(){
-      const spm = parseFloat(q("#q_spm").value.replace(/,/g, ""));
-      if (!(spm > 0)) return;
-      q("#q_qty").value = String(Math.round(spm * 60 * hours() * (B.spm[1] || 1) / 10) * 10);
-    }
-    hRadios.forEach(r => r.onchange = () => { q("#q_hman").value = ""; calcQty(); });
-    q("#q_hman").oninput = calcQty;
-    q("#q_spm").oninput = calcQty;
-    q("#q_allmc").onchange = () => refreshMachines();
-    q("#q_allit").onchange = refreshItems;
+    function calcQty(){ const s = parseFloat(q("#q_spm").value.replace(/,/g, "")); if (s > 0) q("#q_qty").value = String(Math.round(s * 60 * hours() * (B.spm[1] || 1) / 10) * 10); }
+    hR.forEach(r => r.onchange = () => { q("#q_hman").value = ""; calcQty(); });
+    q("#q_hman").oninput = calcQty; q("#q_spm").oninput = calcQty;
+    q("#q_allmc").onchange = () => refreshMachines(); q("#q_allit").onchange = refreshItems;
     q("#q_mc").addEventListener("keydown", e => { if (e.key === "Enter" && !fm.pop) q("#q_it").focus(); });
     q("#q_it").addEventListener("keydown", e => { if (e.key === "Enter" && !fi.pop) q("#q_qty").focus(); });
     q("#q_qty").onkeydown = e => { if (e.key === "Enter") quickAdd(); };
-    q("#q_add").onclick = quickAdd;
-    q("#q_reset").onclick = resetQuick;
-    function resetQuick(){
-      fm.close(); fi.close(); fm.set(""); fi.set("");
-      q("#q_allmc").checked = q("#q_allit").checked = false;
-      fm.setItems(LL.mc_all); fi.setItems(LL.item_list);
-      q("#q_spm").value = q("#q_qty").value = ""; q("#q_src").textContent = "";
-      B.spm = [null, 1, ""]; q("#q_mc").focus();
-    }
+    q("#q_add").onclick = quickAdd; q("#q_reset").onclick = resetQuick;
+    function resetQuick(){ fm.close(); fi.close(); fm.set(""); fi.set(""); q("#q_allmc").checked = q("#q_allit").checked = false; fm.setItems(LL.mc_all); fi.setItems(LL.item_list); q("#q_spm").value = q("#q_qty").value = ""; q("#q_src").textContent = ""; B.spm = [null, 1, ""]; q("#q_mc").focus(); }
     function quickAdd(){
       const m = fm.get(), it = fi.get().toUpperCase(), n = q("#q_qty").value.trim();
       if (!(m && it && n)) return alertBox("설비명·품번·수량을 모두 넣으세요.");
-      B.rows.push({line: m, date_t: "", shift: "", item: it, qty_t: n, prio: "", st: "", lv: ""});
-      dirty(); show();
-      fi.set(""); q("#q_qty").value = q("#q_spm").value = ""; q("#q_src").textContent = "";
-      refreshMachines(""); q("#q_it").focus();
+      B.rows.push({line: m, date_t: "", shift: "", item: it, qty_t: n, prio: "", st: "", lv: ""}); dirty(); show();
+      fi.set(""); q("#q_qty").value = q("#q_spm").value = ""; q("#q_src").textContent = ""; refreshMachines(""); q("#q_it").focus();
       lbl(`${B.rows.length}줄  →  다 넣었으면 [검사]`);
     }
-
-    /* ----- 붙여넣기 ----- */
+    /* 붙여넣기 */
     function pasteText(text){
       let added = 0, skipped = 0;
       for (const line of text.replace(/\r\n?/g, "\n").split("\n")) {
         if (!line.trim()) continue;
         let c = line.split("\t").map(x => x.trim());
         while (c.length && c[c.length - 1] === "") c.pop();
-        if (c.length >= 7 && /^\d*$/.test(c[0]) && (c.length === 7 || !parseLooseDate(c[1]))) c = c.slice(1);   // Upload Seq 칸 빼기
-        if (c.length >= 5 && parseLooseDate(c[1])) {                                                        // MES 양식
-          while (c.length < 6) c.push("");
-          B.rows.push({line: c[0], date_t: c[1], shift: c[2], item: c[3], qty_t: c[4], prio: c[5], st: "", lv: ""}); added++; continue;
-        }
-        if (c.length >= 3 && /^[\d,]+(\.\d+)?$/.test(c[2])) {                                               // 설비명·품번·수량
-          B.rows.push({line: c[0], date_t: "", shift: "", item: c[1], qty_t: c[2], prio: "", st: "", lv: ""}); added++; continue;
-        }
+        if (c.length >= 7 && /^\d*$/.test(c[0]) && (c.length === 7 || !parseLooseDate(c[1]))) c = c.slice(1);
+        if (c.length >= 5 && parseLooseDate(c[1])) { while (c.length < 6) c.push(""); B.rows.push({line: c[0], date_t: c[1], shift: c[2], item: c[3], qty_t: c[4], prio: c[5], st: "", lv: ""}); added++; continue; }
+        if (c.length >= 3 && /^[\d,]+(\.\d+)?$/.test(c[2])) { B.rows.push({line: c[0], date_t: "", shift: "", item: c[1], qty_t: c[2], prio: "", st: "", lv: ""}); added++; continue; }
         skipped++;
       }
-      dirty(); show();
-      lbl(`${added}줄 붙여넣음` + (skipped ? ` (${skipped}줄 건너뜀: 제목줄·빈칸 등)` : "") + "  →  [검사]를 누르세요.");
+      dirty(); show(); lbl(`${added}줄 붙여넣음` + (skipped ? ` (${skipped}줄 건너뜀: 제목줄·빈칸 등)` : "") + "  →  [검사]를 누르세요.");
     }
-    ov.addEventListener("paste", e => {
-      if (e.target.closest("input,textarea")) return;
-      const t = (e.clipboardData || window.clipboardData).getData("text");
-      if (t) { e.preventDefault(); pasteText(t); }
-    });
+    ov.addEventListener("paste", e => { if (e.target.closest("input,textarea")) return; const t = (e.clipboardData || window.clipboardData).getData("text"); if (t) { e.preventDefault(); pasteText(t); } });
     q("#b_paste").onclick = async () => {
       try { if (navigator.clipboard && navigator.clipboard.readText) { const t = await navigator.clipboard.readText(); if (t) return pasteText(t); } } catch (e) {}
-      const t = await dialog({title: "붙여넣기", html: `<div class="hint">엑셀에서 복사한 내용을 아래 칸에 붙여넣고 [추가]를 누르세요.</div><textarea id="pt" style="width:100%;height:240px;margin-top:6px"></textarea>`,
-        buttons: [{t: "취소", v: null}, {t: "추가", c: "b-blue", get: o => o.querySelector("#pt").value}]});
+      const t = await dialog({title: "붙여넣기", html: `<div class="hint">엑셀에서 복사한 내용을 아래 칸에 붙여넣고 [추가]를 누르세요.</div><textarea id="pt" style="width:100%;height:240px"></textarea>`,
+        buttons: [{t: "취소", v: null}, {t: "추가", c: "b-blue", get: o => $("#pt", o).value}]});
       if (t) pasteText(t);
     };
-
-    /* ----- 표 ----- */
-    const raw = (r, c, i) => [i + 1, r.line, r.date || r.date_t || defDate(), r.shift_v || r.shift || defShift(), r.item,
-      r.qty ?? r.qty_t, r.prio || r.prio_auto || "", r.mc || "", r.iname || "", r.mold || "", r.no || "", r.st || "", r.recent_date || "", r.spm ?? ""][c];
-    const sortKey = (v, c) => {
-      if (v === null || v === undefined || String(v).trim() === "") return null;
-      if ([0, 3, 5, 6, 13].includes(c)) { const f = parseFloat(String(v).replace(/[,() ]/g, "")); return isNaN(f) ? [1, String(v).toLowerCase()] : [0, f]; }
-      if ([2, 12].includes(c)) { const d = parseLooseDate(String(v).replace(/[()]/g, "")); return d ? [0, d] : [1, String(v)]; }
-      return [0, String(v).toLowerCase()];
-    };
-    const cmp = (a, b) => a[0] - b[0] || (a[1] < b[1] ? -1 : a[1] > b[1] ? 1 : 0);
-    function show(){
-      let order = B.rows.map((_, i) => i);
-      if (B.sort !== null) {
-        const filled = [], empty = [];
-        order.forEach(i => { const k = sortKey(raw(B.rows[i], B.sort, i), B.sort); (k ? filled : empty).push([i, k]); });
-        filled.sort((x, y) => cmp(x[1], y[1]) * (B.rev ? -1 : 1));
-        order = filled.map(x => x[0]).concat(empty.map(x => x[0]));
-      }
-      const th = BCOLS.map((t, c) => `<th class="sort" data-c="${c}">${t}${B.sort === c ? (B.rev ? " ▼" : " ▲") : ""}</th>`).join("");
-      const body = order.map(i => {
-        const r = B.rows[i];
-        const cells = [i + 1, r.line, r.date_t || `(${defDate()})`, r.shift || `(${defShift()})`, r.item, r.qty_t, r.prio || r.prio_auto || "",
-          r.mc || "", r.iname || "", r.mold || "", r.no || "", r.st || "", (r.recent_date || "").slice(0, 10), r.spm ? Number(r.spm).toFixed(1) : ""];
-        return `<tr data-i="${i}" class="${r.lv || ""}${B.sel.has(i) ? " sel" : ""}"><td class="ck"><input type="checkbox"${B.sel.has(i) ? " checked" : ""}></td>${cells.map((v, c) => `<td data-c="${c}" title="${esc(v)}"${c === 11 ? ' style="max-width:420px"' : ""}${[5, 6].includes(c) ? ' class="num"' : ""}>${esc(v)}</td>`).join("")}</tr>`;
-      }).join("");
-      q("#b_box").innerHTML = B.rows.length ? `<table class="g"><thead><tr><th class="ck"><input type="checkbox" id="b_all"></th>${th}</tr></thead><tbody>${body}</tbody></table>`
-        : `<div class="empty">아직 줄이 없습니다. 빠른 입력 또는 엑셀 붙여넣기(Ctrl+V)로 넣으세요.</div>`;
-      const all = q("#b_all");
-      if (all) all.onchange = () => { B.sel.clear(); if (all.checked) B.rows.forEach((_, i) => B.sel.add(i)); show(); };
-    }
-    q("#b_box").addEventListener("click", e => {
-      const th = e.target.closest("th.sort");
-      if (th) { const c = +th.dataset.c; if (B.sort === c) B.rev = !B.rev; else { B.sort = c; B.rev = false; } return show(); }
-      const tr = e.target.closest("tbody tr"); if (!tr) return;
-      const i = +tr.dataset.i;
-      if (e.target.closest("td.ck")) { if (e.target.tagName !== "INPUT") return; e.target.checked ? B.sel.add(i) : B.sel.delete(i); }
-      else if (e.ctrlKey || e.metaKey) { B.sel.has(i) ? B.sel.delete(i) : B.sel.add(i); }
-      else { B.sel.clear(); B.sel.add(i); }
-      ov.querySelectorAll("#b_box tbody tr").forEach(t => { const on = B.sel.has(+t.dataset.i); t.classList.toggle("sel", on); t.querySelector("input").checked = on; });
-    });
-    q("#b_box").addEventListener("dblclick", async e => {
-      const td = e.target.closest("tbody td[data-c]"); if (!td) return;
-      const i = +td.parentNode.dataset.i, c = +td.dataset.c, r = B.rows[i];
-      const keys = {1: "line", 2: "date_t", 3: "shift", 4: "item", 5: "qty_t", 6: "prio"};
+    /* 고치기 */
+    const mcCodeOf = t => { t = String(t || "").trim(); if (LL.machines.hasOwnProperty(t)) return t; const n = t.replace(/\s/g, "").toUpperCase(); for (const [c, nm] of Object.entries(LL.machines)) if (nm && nm.replace(/\s/g, "").toUpperCase() === n) return c; return ""; };
+    const itemChoices = line => { const all = [...new Set(LL.item_list.map(x => x[0]).filter(Boolean))].sort((a, b) => a.localeCompare(b, "ko")); const mc = mcCodeOf(line); return [all, mc ? [...new Set((LL.mc_items[mc] || []).map(x => x[0]))].sort((a, b) => a.localeCompare(b, "ko")) : []]; };
+    const lineChoices = item => { const all = [...new Set(LL.mc_all.map(x => x[0]).filter(Boolean))].sort((a, b) => a.localeCompare(b, "ko")); return [all, [...new Set((LL.item_mcs[String(item || "").trim().toUpperCase()] || []).map(([mc]) => LL.machines[mc] || mc))].sort((a, b) => a.localeCompare(b, "ko"))]; };
+    async function editCell(i, c){
+      const r = B.rows[i], keys = {1: "line", 2: "date_t", 3: "shift", 4: "item", 5: "qty_t", 6: "prio"};
       if (!keys[c]) return;
       let v;
       if (c === 1) { const [a, h] = lineChoices(r.item); v = await askPick("설비", `설비 고르기 (품번 ${r.item})`, a, h, "이 품번을 만든 호기"); }
       else if (c === 4) { const [a, h] = itemChoices(r.line); v = await askPick("품번", `품번 고르기 (설비 ${r.line})`, a, h, "이 설비에서 만든 품번"); if (v !== null) v = v.toUpperCase(); }
       else v = await ask(BCOLS[c], `${BCOLS[c]} 값:` + ([2, 3, 6].includes(c) ? "\n(비우면 기본값)" : ""), r[keys[c]] || "");
       if (v === null || v.trim() === String(r[keys[c]] || "").trim()) return;
-      r[keys[c]] = v.trim();
-      clearDerived(r); r.st = "수정됨 - 검사 필요"; r.lv = "";
-      dirty(); show();
-    });
-    const clearDerived = r => ["mc", "mname", "iname", "mold", "date", "qty", "shift_v", "prio_auto", "no"].forEach(k => delete r[k]);
-    function dirty(){ B.checked = false; B.rows.forEach(r => { r.no = ""; }); }
+      r[keys[c]] = v.trim(); clearDerived(r); r.st = "수정됨 - 검사 필요"; r.lv = ""; dirty(); show();
+    }
     q("#b_def").onchange = () => { dirty(); show(); lbl("기본값이 바뀌었습니다. [검사]를 다시 하세요."); };
     q("#b_shift").onchange = q("#b_def").onchange;
-
-    function itemChoices(line){
-      const all = [...new Set(LL.item_list.map(x => x[0]).filter(Boolean))].sort((a, b) => a.localeCompare(b, "ko"));
-      const mc = mcCodeOf(line);
-      const hist = mc ? [...new Set((LL.mc_items[mc] || []).map(x => x[0]))].sort((a, b) => a.localeCompare(b, "ko")) : [];
-      return [all, hist];
-    }
-    function lineChoices(item){
-      const all = [...new Set(LL.mc_all.map(x => x[0]).filter(Boolean))].sort((a, b) => a.localeCompare(b, "ko"));
-      const hist = [...new Set((LL.item_mcs[String(item || "").trim().toUpperCase()] || []).map(([mc]) => LL.machines[mc] || mc))].sort((a, b) => a.localeCompare(b, "ko"));
-      return [all, hist];
-    }
-    function mcCodeOf(t){
-      t = String(t || "").trim();
-      if (LL.machines.hasOwnProperty(t)) return t;
-      const n = t.replace(/\s/g, "").toUpperCase();
-      for (const [c, nm] of Object.entries(LL.machines)) if (nm && nm.replace(/\s/g, "").toUpperCase() === n) return c;
-      return "";
-    }
-
     q("#b_editsel").onclick = async () => {
-      if (B.sel.size !== 1) return alertBox("수정할 줄 1개를 선택하세요.");
-      const i = [...B.sel][0], r = B.rows[i];
-      const f = [["설비", "line", r.line], ["계획일자", "date_t", r.date_t || defDate()], ["교대조", "shift", r.shift || defShift()],
-                 ["품번", "item", r.item], ["계획수량", "qty_t", r.qty_t], ["순위", "prio", r.prio]];
+      if (T.sel.size !== 1) return alertBox("수정할 줄 1개를 선택하세요.");
+      const r = B.rows[T.picked()[0]];
+      const f = [["설비", "line", r.line], ["계획일자", "date_t", r.date_t || defDate()], ["교대조", "shift", r.shift || defShift()], ["품번", "item", r.item], ["계획수량", "qty_t", r.qty_t], ["순위", "prio", r.prio]];
       const res = await dialog({title: "등록 예정 작업지시 수정 - MES 미반영",
-        html: `<div class="red" style="margin-bottom:10px">이 창의 수정은 등록 예정 목록만 바꿉니다. MES는 아직 변경되지 않습니다.</div>
+        html: `<div class="red">이 창의 수정은 등록 예정 목록만 바꿉니다. MES는 아직 변경되지 않습니다.</div>
           <div class="form">${f.map(([lab, k, v]) => `<span class="lab">${lab}</span><span><input type="text" id="e_${k}" value="${esc(v)}" style="width:${k === "line" || k === "item" ? 220 : 160}px"></span>`).join("")}</div>
-          <div class="hint" style="margin-top:10px">최근 작업: ${esc((r.recent_date || "-").slice(0, 10))} &nbsp; 최근 SPM: ${r.spm ? Number(r.spm).toFixed(1) : "없음"}</div>`,
+          <div class="hint">최근 작업: ${esc((r.recent_date || "-").slice(0, 10))} &nbsp; 최근 SPM: ${r.spm ? Number(r.spm).toFixed(1) : "없음"}</div>`,
         buttons: [{t: "취소", v: null}, {t: "저장", c: "b-blue", check: o => {
-          const it = o.querySelector("#e_item").value.trim(), qt = o.querySelector("#e_qty_t").value.trim(), ln = o.querySelector("#e_line").value.trim();
+          const it = $("#e_item", o).value.trim(), qt = $("#e_qty_t", o).value.trim(), ln = $("#e_line", o).value.trim();
           if (!ln || !it || !qt) { warnBox("설비·품번·계획수량은 비울 수 없습니다."); return false; }
           if (!(parseFloat(qt.replace(/,/g, "")) > 0)) { warnBox("계획수량은 1 이상의 숫자로 넣으세요."); return false; }
           return true;
-        }, get: o => Object.fromEntries(f.map(([, k]) => [k, o.querySelector("#e_" + k).value.trim()]))}],
-        onOpen: o => {
-          new Suggest(o.querySelector("#e_line"), {items: lineChoices("")[0].map(x => [x, x]), rows: 20});
-          new Suggest(o.querySelector("#e_item"), {items: itemChoices("")[0].map(x => [x, x]), rows: 20});
-        }});
+        }, get: o => Object.fromEntries(f.map(([, k]) => [k, $("#e_" + k, o).value.trim()]))}],
+        onOpen: o => { new Suggest($("#e_line", o), {items: lineChoices("")[0].map(x => [x, x]), rows: 20}); new Suggest($("#e_item", o), {items: itemChoices("")[0].map(x => [x, x]), rows: 20}); }});
       if (!res) return;
-      Object.assign(r, res); r.item = r.item.toUpperCase();
-      clearDerived(r); r.st = "수정됨 - 검사 필요"; r.lv = "";
-      dirty(); show(); lbl("등록 예정 목록을 수정했습니다. [검사]를 다시 하세요.");
+      Object.assign(r, res); r.item = r.item.toUpperCase(); clearDerived(r); r.st = "수정됨 - 검사 필요"; r.lv = ""; dirty(); show();
+      lbl("등록 예정 목록을 수정했습니다. [검사]를 다시 하세요.");
     };
-    q("#b_delsel").onclick = () => {
-      if (!B.sel.size) return alertBox("뺄 줄을 선택하세요.");
-      B.rows = B.rows.filter((_, i) => !B.sel.has(i)); B.sel.clear(); dirty(); show();
-      lbl(`${B.rows.length}줄 남음`);
-    };
-    q("#b_clear").onclick = async () => {
-      if (B.rows.length && !await confirmBox("표를 모두 비울까요?")) return;
-      B.rows = []; B.sel.clear(); dirty(); show(); resetQuick(); lbl("비웠습니다. 설비부터 다시 고르세요.");
-    };
-
-    /* ----- 검사 / 번호 / 반영 ----- */
+    q("#b_delsel").onclick = () => { if (!T.sel.size) return alertBox("뺄 줄을 선택하세요."); const s = new Set(T.picked()); B.rows = B.rows.filter((_, i) => !s.has(i)); dirty(); T.sel.clear(); show(); lbl(`${B.rows.length}줄 남음`); };
+    q("#b_clear").onclick = async () => { if (B.rows.length && !await confirmBox("표를 모두 비울까요?")) return; B.rows = []; dirty(); show(); resetQuick(); lbl("비웠습니다. 설비부터 다시 고르세요."); };
+    /* 검사·번호·반영 */
     const send = () => ({rows: B.rows.map(r => ({...r})), d_def: defDate(), shift: defShift(), hours: B.hours || 0});
-    const merge = rows => { rows.forEach((n, i) => { B.rows[i] = {...B.rows[i], ...n}; }); };
-    async function check(){
-      if (!B.rows.length) { alertBox("붙여넣은 줄이 없습니다."); return false; }
-      if (!defDate()) { warnBox("기본 계획일자를 넣으세요."); return false; }
-      try {
-        const j = await api("/api/batch/check", send(), "검사 중...");
-        merge(j.rows); B.checked = true; show();
-        const ne = B.rows.filter(r => r.lv === "err").length, nw = B.rows.filter(r => ["warn", "dup"].includes(r.lv)).length;
-        lbl(`검사: ${B.rows.length}줄 - 오류 ${ne} (빨강, 반영 안 됨) / 확인 ${nw} (노랑·하늘)` + (ne ? "  →  빨간 줄을 고치거나 빼세요" : "  →  [W/O 번호생성]"));
-        return ne === 0;
-      } catch (e) { showErr(e); return false; }
-    }
+    const merge = rows => rows.forEach((n, i) => { B.rows[i] = {...B.rows[i], ...n}; });
+    q("#b_check").onclick = guard(async () => {
+      if (!B.rows.length) return alertBox("붙여넣은 줄이 없습니다.");
+      const j = await api("/api/batch/check", send(), "검사 중..."); merge(j.rows); show();
+      const ne = B.rows.filter(r => r.lv === "err").length, nw = B.rows.filter(r => ["warn", "dup"].includes(r.lv)).length;
+      lbl(`검사: ${B.rows.length}줄 - 오류 ${ne} (빨강, 반영 안 됨) / 확인 ${nw} (노랑·하늘)` + (ne ? "  →  빨간 줄을 고치거나 빼세요" : "  →  [W/O 번호생성]"));
+    });
     async function makeNo(){
       if (!B.rows.length) { alertBox("붙여넣은 줄이 없습니다."); return false; }
-      try {
-        const j = await api("/api/batch/make_no", send(), "작업지시번호 만드는 중...");
-        merge(j.rows); B.checked = true; show();
-        if (j.error) { warnBox(j.error); return false; }
-        lbl(`작업지시번호 ${B.rows.length}개 생성 (아직 저장 안 됨)  ${j.note ? "· 규칙: " + j.note : "· 같은 날 기존 번호 형식 사용"}  →  번호 확인 후 [작업지시 반영]`);
-        return true;
-      } catch (e) { showErr(e); return false; }
+      const j = await api("/api/batch/make_no", send(), "작업지시번호 만드는 중..."); merge(j.rows); show();
+      if (j.error) { warnBox(j.error); return false; }
+      lbl(`작업지시번호 ${B.rows.length}개 생성 (아직 저장 안 됨)  ${j.note ? "· 규칙: " + j.note : "· 같은 날 기존 번호 형식 사용"}  →  번호 확인 후 [작업지시 반영]`);
+      return true;
     }
-    q("#b_check").onclick = check;
-    q("#b_no").onclick = makeNo;
-    q("#b_apply").onclick = async () => {
+    q("#b_no").onclick = guard(makeNo);
+    q("#b_apply").onclick = guard(async () => {
       if (!B.rows.length) return;
       if (!B.rows.every(r => r.no) && !await makeNo()) return;
       if (B.rows.some(r => r.lv === "err")) return warnBox("빨간 줄이 있습니다. 고치거나 뺀 뒤 하세요.");
@@ -1088,93 +1005,803 @@ async function openBatch(recentHours, recentDate){
       const seq = no => +((no.match(/P(\d+)$/) || [0, 0])[1]);
       const nos = B.rows.map(r => r.no).sort((a, b) => seq(a) - seq(b));
       const msg = `작업지시 ${B.rows.length}건을 MES에 반영합니다.\n\n` + (B.hours ? `  근무기준: ${hoursText(B.hours)}\n` : "")
-        + `  계획일자: ${days.slice(0, 5).join(", ")}${days.length > 5 ? " 외" : ""}\n  번호: ${nos[0]} ~ ${nos[nos.length - 1]}\n`
-        + (nw ? `  ※ 확인 필요 줄 ${nw}개 (노랑·하늘)\n` : "")
-        + "\nMES '작업지시일괄처리'와 같은 방법으로 넣습니다.\n기존 작업지시는 바뀌지 않습니다. 계속할까요?";
+        + `  계획일자: ${days.slice(0, 5).join(", ")}${days.length > 5 ? " 외" : ""}\n  번호: ${nos[0]} ~ ${nos[nos.length - 1]}\n` + (nw ? `  ※ 확인 필요 줄 ${nw}개 (노랑·하늘)\n` : "")
+        + "\nMES '작업지시일괄처리'와 같은 방법(업로더 표 + MES 프로그램)으로 넣습니다.\n기존 작업지시는 바뀌지 않습니다. 계속할까요?";
       if (!await confirmBox(msg, "작업지시 반영", "반영", nw > 0)) return;
-      try {
-        const j = await api("/api/batch/apply", send(), "MES에 반영 중...");
-        merge(j.rows); B.applied = true; show();
-        lbl(`반영 완료 ${j.ok}/${j.n}건 (업로더 session ${j.sid}).  현장 화면에 보이는지 확인하세요.`);
-        await alertBox(`작업지시 ${j.ok}/${j.n}건 반영했습니다.`);
-        if (G.fetched) fetchGrid(false);
-      } catch (e) { showErr(e); }
-    };
-
+      const j = await api("/api/batch/apply", send(), "MES에 반영 중..."); merge(j.rows); B.applied = true; show();
+      lbl(`반영 완료 ${j.ok}/${j.n}건 (업로더 session ${j.sid}).  현장 화면에 보이는지 확인하세요.`);
+      await alertBox(`작업지시 ${j.ok}/${j.n}건 반영했습니다.`);
+      PAGES.wo && PAGES.wo.refetch && PAGES.wo.refetch();
+    });
     show();
     if (recent) {
       lbl(`최근 30일 자료를 불러오는 중... (${hoursText(recentHours)})`);
       api("/api/batch/recent", {hours: recentHours}, "최근 30일 작업지시 불러오는 중...").then(j => {
         B.rows = j.rows; show();
-        const noSpm = j.rows.filter(r => !r.qty_t).length;
-        lbl(`최근 30일 호기별 최종 작업지시 ${j.rows.length}건 불러옴 · ${hoursText(recentHours)} 기준 계획수량 자동계산`
-          + (noSpm ? ` · SPM 없어 직접 입력 필요 ${noSpm}개` : "") + "  → 필요 없는 줄은 빼고, 수정 후 [검사]");
+        const ns = j.rows.filter(r => !r.qty_t).length;
+        lbl(`최근 30일 호기별 최종 작업지시 ${j.rows.length}건 불러옴 · ${hoursText(recentHours)} 기준 계획수량 자동계산` + (ns ? ` · SPM 없어 직접 입력 필요 ${ns}개` : "") + "  → 필요 없는 줄은 빼고, 수정 후 [검사]");
         if (!j.rows.length) alertBox("최근 30일 작업지시가 없습니다.");
       }).catch(e => { showErr(e); lbl("최근 작업지시 불러오기 실패"); });
     } else q("#q_mc").focus();
   }
 }
-
-/* 목록에서 고르기 창 (글자 치면 걸러짐, 직접 입력도 됨) */
 function askPick(title, labelText, all, hist, histText){
-  return dialog({title, cls: "",
-    html: `<b>${esc(labelText)}</b><div class="hint" style="margin:4px 0 6px">글자를 치면 바로 걸러집니다. 누르면 고르기, 목록에 없으면 직접 입력 후 [확인]</div>
-      <input type="text" id="pk" style="width:100%">
-      ${hist.length ? `<label class="chk" style="margin-top:6px"><input type="checkbox" id="pkh" checked> ${esc(histText)}만 보기 (${hist.length}개)</label>` : ""}
-      <div class="list" id="pkl" style="margin-top:6px"></div><div class="hint" id="pkc"></div>`,
-    buttons: [{t: "취소", v: null}, {t: "확인", c: "b-blue", get: ov => ov.querySelector("#pk").value.trim() || null}],
+  return dialog({title,
+    html: `<b>${esc(labelText)}</b><div class="hint">글자를 치면 바로 걸러집니다. 누르면 고르기, 목록에 없으면 직접 입력 후 [확인]</div>
+      <input type="text" id="pk" style="width:100%">${hist.length ? `<label class="chk"><input type="checkbox" id="pkh" checked> ${esc(histText)}만 보기 (${hist.length}개)</label>` : ""}
+      <div class="list" id="pkl"></div><div class="hint" id="pkc"></div>`,
+    buttons: [{t: "취소", v: null}, {t: "확인", c: "b-blue", get: ov => $("#pk", ov).value.trim() || null}],
     onOpen: (ov, close) => {
       let shown = [];
-      const fill = () => {
-        const src = ov.querySelector("#pkh") && ov.querySelector("#pkh").checked ? hist : all;
-        const t = ov.querySelector("#pk").value.trim().toUpperCase().replace(/\s/g, "");
+      const fill = () => { const src = $("#pkh", ov) && $("#pkh", ov).checked ? hist : all, t = $("#pk", ov).value.trim().toUpperCase().replace(/\s/g, "");
         shown = src.filter(x => !t || x.toUpperCase().replace(/\s/g, "").includes(t));
-        ov.querySelector("#pkl").innerHTML = shown.slice(0, 500).map(x => `<div data-v="${esc(x)}">${esc(x)}</div>`).join("");
-        ov.querySelector("#pkc").textContent = `${shown.length.toLocaleString()}개 / 전체 ${src.length.toLocaleString()}개`;
-      };
-      ov.querySelector("#pk").oninput = fill;
-      ov.querySelector("#pk").onkeydown = e => { if (e.key === "Enter") { const t = e.target.value.trim(); close(shown.length === 1 ? shown[0] : (t || null)); } };
-      if (ov.querySelector("#pkh")) ov.querySelector("#pkh").onchange = fill;
-      ov.querySelector("#pkl").onclick = e => { const d = e.target.closest("div[data-v]"); if (d) close(d.dataset.v); };
+        $("#pkl", ov).innerHTML = shown.slice(0, 500).map(x => `<div data-v="${esc(x)}">${esc(x)}</div>`).join("");
+        $("#pkc", ov).textContent = `${shown.length.toLocaleString()}개 / 전체 ${src.length.toLocaleString()}개`; };
+      $("#pk", ov).oninput = fill;
+      $("#pk", ov).onkeydown = e => { if (e.key === "Enter") { const t = e.target.value.trim(); close(shown.length === 1 ? shown[0] : (t || null)); } };
+      if ($("#pkh", ov)) $("#pkh", ov).onchange = fill;
+      $("#pkl", ov).onclick = e => { const d = e.target.closest("div[data-v]"); if (d) close(d.dataset.v); };
       fill();
     }});
 }
 
 /* ============================================================
+   ① 금형·품번 관리
+   ============================================================ */
+BUILD.old = sec => {
+  sec.insertAdjacentHTML("beforeend", `
+    <div class="bar"><button class="b-blue b-big o-fetch">MES에서 조회</button><span>검색</span><input type="text" class="o-q" style="width:200px"><span class="sp"></span>
+      <button class="b-teal o-tpl" style="display:none">선택행으로 등록양식 만들기</button></div>
+    <div class="bar act"><label class="chk o-modebox"><input type="checkbox" class="o-mode"> 수정 모드</label><label class="chk"><input type="checkbox" class="o-sa"> 다른 이름으로 저장 모드</label><span class="sp"></span>
+      <button class="b-green b-big o-save">수정 저장 (0)</button><button class="b-green b-big o-saveas">다른 이름으로 저장</button><button class="b-big o-detm">선택 금형 전체컬럼 수정</button>
+      <button class="b-red o-delm">선택 금형 삭제</button><button class="o-cancel">수정 취소</button></div>
+    <div class="sa o-salbl" style="display:none"></div>
+    <div class="legend">맨 앞 ☐ = 체크 (머리글 ☐ = 전체). 삭제는 체크(또는 선택)한 줄이 대상. 수정 모드에서 칸 더블클릭 = 수정 (Enter 확정 / Esc 취소). 주황 = 저장 대기. [다른 이름으로 저장 모드] = 금형 1개 골라 금형코드·금형명·품번까지 고친 뒤 새로 저장 (원본 그대로)</div>
+    <div class="split"><div class="o-mold tbox tb-top"></div>
+      <div class="bar"><b class="o-ilbl">선택한 금형의 품번</b><button class="b-red o-deli">선택 품번줄 삭제</button><button class="o-deti">선택 품번 전체컬럼 수정</button><span class="sp"></span>
+        <span>금형코드/품번 일부</span><input type="text" class="o-iq" style="width:150px"><button class="b-blue o-ifind">품번 테이블에서 찾기</button></div>
+      <div class="o-item tbox tb-bot"></div></div>
+    <div class="status o-st"></div>`);
+  const q = s => $(s, sec);
+  const S = {m: null, it: null, edits: new Map(), sa: null};
+  const mode = () => q(".o-mode").checked;
+  const ekey = (d, i) => `${d.token}|${i}`;
+  const val = (d, i, c) => { const e = S.edits.get(ekey(d, i)), col = d.cols[c]; return e && e.changes[col] !== undefined ? e.changes[col].new : d.rows[i][c]; };
+  const isEdited = (d, i) => S.edits.has(ekey(d, i));
+  const TM = new Table(q(".o-mold"), {emptyText: "[MES에서 조회]를 누르세요.",
+    val: (i, c) => val(S.m, i, c), rowCls: i => isEdited(S.m, i) ? "edit" : (S.m.ref && S.m.cols.includes(S.m.code_col) && S.m.rows[i][S.m.cols.indexOf(S.m.code_col)].toUpperCase() === S.m.ref ? "ok" : ""),
+    cellCls: (i, c) => { const e = S.edits.get(ekey(S.m, i)); return e && e.changes[S.m.cols[c]] !== undefined ? "chg" : ""; },
+    onPick: i => loadItems(i), onSel: () => status(), onDbl: (i, c, td) => dbl("m", i, c, td)});
+  const TI = new Table(q(".o-item"), {emptyText: "금형 한 개를 선택하세요.", noRows: "품번이 없습니다.",
+    val: (i, c) => val(S.it, i, c), rowCls: i => isEdited(S.it, i) ? "edit" : "",
+    cellCls: (i, c) => { const e = S.edits.get(ekey(S.it, i)); return e && e.changes[S.it.cols[c]] !== undefined ? "chg" : ""; },
+    onDbl: (i, c, td) => dbl("i", i, c, td)});
+  const part = w => w === "m" ? [S.m, TM, "mold"] : [S.it, TI, "item"];
+  function updSave(){ let n = 0; S.edits.forEach(e => n += Object.keys(e.changes).length); q(".o-save").textContent = `수정 저장 (${n})`; }
+  function status(){ if (!S.m) return; q(".o-st").textContent = `조회 ${S.m.time}   전체 ${S.m.rows.length}건` + (TM.q ? `   검색결과 ${TM.view.length}건` : "") + (TM.sel.size ? `   선택 ${TM.sel.size}` : "") + "   (초록 줄 = 기준 금형 / 여러 줄 선택: Ctrl·Shift+클릭)"; }
+  const fetch = guard(async (askFirst = true, keepItems) => {
+    if (askFirst && S.edits.size && !await confirmBox(`저장 안 한 수정 ${S.edits.size}건이 있습니다.\n버리고 다시 조회할까요?`)) return;
+    const prevCode = keepItems && S.it && S.it.code;
+    S.m = await api("/api/old/fetch", {}, "MES에서 조회 중..."); S.edits.clear(); updSave();
+    q(".o-tpl").style.display = S.m.show_reg ? "" : "none";
+    TM.set(S.m.heads, S.m.rows); TM.filter(q(".o-q").value);
+    if (prevCode && S.m.cols.includes(S.m.code_col)) {
+      const ci = S.m.cols.indexOf(S.m.code_col), i = S.m.rows.findIndex(r => r[ci].trim() === prevCode);
+      if (i >= 0) { TM.sel.add(i); TM.refreshSel(); await loadItems(i); } else clearItems();
+    } else clearItems();
+    status();
+  });
+  function clearItems(){ S.it = null; TI.empty("금형 한 개를 선택하세요."); q(".o-ilbl").textContent = "선택한 금형의 품번 (금형 한 개를 선택하세요)"; q(".o-ilbl").className = "o-ilbl"; }
+  let itemSeq = 0;
+  async function loadItems(i){
+    if (!S.m.item_on) return;
+    const my = ++itemSeq;
+    q(".o-ilbl").textContent = "품번 읽는 중...";
+    try {
+      const d = await api("/api/old/items", {token: S.m.token, idx: i}, null);
+      if (my !== itemSeq) return;
+      for (const k of [...S.edits.keys()]) if (S.it && k.startsWith(S.it.token + "|")) S.edits.delete(k);
+      S.it = d; TI.set(d.heads, d.rows); updSave();
+      const lb = q(".o-ilbl");
+      lb.textContent = `금형 ${d.code} 의 품번 ${d.rows.length}건` + (!d.rows.length ? "   ← 품번이 없으면 작업지시가 안 될 수 있음  " + d.hint : "");
+      lb.className = "o-ilbl " + (d.rows.length ? "" : "red");
+    } catch (e) { q(".o-ilbl").textContent = "품번 조회 실패: " + e.message; }
+  }
+  function block(w, i, col){
+    const [d] = part(w), p = w === "m" ? "mold" : "item";
+    if (!mode()) return "지금은 보기 전용입니다.\n고치려면 위쪽 [수정 모드]를 체크하세요.";
+    const c = d.defs[col];
+    if (!c) return "컬럼 정보를 찾을 수 없습니다.";
+    if (!d.keys.length) return "매핑에 중복검사키가 없어서 어느 줄인지 특정할 수 없습니다.";
+    const lk = w === "m" ? S.m.code_col : S.m.link_col;
+    if (S.sa) {
+      if (d.cols.includes(lk) && d.rows[i][d.cols.indexOf(lk)].trim() !== S.sa.code) return `다른 이름으로 저장 모드에서는 고른 금형 ${S.sa.code} 과(와) 그 품번만 고칠 수 있습니다.`;
+      if (p === "item" && col === S.m.link_col) return "품번의 금형코드 칸은 저장할 때 새 금형코드로 자동으로 바뀝니다. 위 금형 표의 금형코드를 고치세요.";
+    } else if (col === lk) return "금형코드는 작업지시·샷수 이력 등 여러 곳에 연결되어 있어 여기서 수정할 수 없습니다.\n새 코드가 필요하면 [다른 이름으로 저장 모드]를 쓰세요.";
+    if (!c.editable) return `${col} (${c.dbtype}) 형식은 여기서 수정할 수 없습니다.`;
+    return null;
+  }
+  const confirmKey = async (d, col) => !d.defs[col].key || await confirmBox(`'${d.defs[col].name}'은(는) 줄을 구분하는 키 값입니다.\n다른 곳에서 쓰고 있지 않은지 확인하셨나요?\n\n수정할까요?`);
+  function setEdit(w, i, col, text){
+    const [d] = part(w), k = d.cols.indexOf(col), old = d.rows[i][k], c = d.defs[col];
+    let nv; try { nv = normalize(c, text); } catch (e) { return `${c.name}: ${e.message}\n수정하지 않았습니다.`; }
+    const key = ekey(d, i);
+    if (sameVal(c, old, nv)) { const e = S.edits.get(key); if (e) { delete e.changes[col]; if (!Object.keys(e.changes).length) S.edits.delete(key); } }
+    else { const e = S.edits.get(key) || {w, token: d.token, idx: i, changes: {}, label: (w === "m" ? "금형 " : "품번 ") + d.keys.map(kc => d.rows[i][d.cols.indexOf(kc)].trim()).join("/")}; e.changes[col] = {old, new: nv}; S.edits.set(key, e); }
+    updSave(); return null;
+  }
+  async function dbl(w, i, c, td){
+    const [d, T] = part(w);
+    if (!mode()) { T.sel.clear(); T.sel.add(i); T.refreshSel(); return detail(w); }
+    const col = d.cols[c], why = block(w, i, col);
+    if (why) return warnBox(why);
+    if (!await confirmKey(d, col)) return;
+    inlineEdit(td, T.val(i, c), async v => { if (v !== null) { const m = setEdit(w, i, col, v); if (m) await warnBox(m); } T.refreshRow(i); });
+  }
+  function detail(w){
+    const [d, T, p] = part(w);
+    if (!d || T.sel.size !== 1) return alertBox(`${p === "mold" ? "금형" : "품번"} 표에서 한 줄을 선택하세요.`);
+    const i = T.picked()[0];
+    vertical(`${p === "mold" ? "금형" : "품번"} 상세 수정 - ` + d.keys.map(kc => d.rows[i][d.cols.indexOf(kc)].trim()).join("/"),
+      () => d.cols.map((col, k) => ({col, name: d.defs[col].name === col ? "" : d.defs[col].name, val: T.val(i, k), type: d.defs[col].dbtype + (d.defs[col].req ? " 필수" : ""),
+        edited: !!(S.edits.get(ekey(d, i)) || {changes: {}}).changes[col], off: !!block(w, i, col)})),
+      {note: mode() ? "값 칸을 더블클릭해서 수정 → 주황색 = 저장 대기. [수정 저장]을 눌러야 MES에 반영됩니다." : "보기 전용 (고치려면 [수정 모드] 체크)", canEdit: true,
+       onEdit: async col => { const why = block(w, i, col); if (why) return warnBox(why); if (!await confirmKey(d, col)) return;
+         const v = await ask(col, `${d.defs[col].name} (${col})\n새 값을 입력하세요:`, T.val(i, d.cols.indexOf(col))); if (v === null) return;
+         const m = setEdit(w, i, col, v); if (m) await warnBox(m); T.refreshRow(i); },
+       onSave: () => save()});
+  }
+  const save = guard(async () => {
+    if (S.sa) return alertBox("다른 이름으로 저장 모드입니다. 원본을 덮어쓰지 않도록 [수정 저장]은 막혀 있습니다.\n[다른 이름으로 저장]을 누르세요.");
+    if (!S.edits.size) return alertBox("수정한 내용이 없습니다.\n칸을 더블클릭해서 고치세요.");
+    const lines = [];
+    S.edits.forEach(e => { const d = e.w === "m" ? S.m : S.it; Object.entries(e.changes).forEach(([c, x]) => lines.push(`${e.label} · ${d.defs[c].name}: '${x.old}' → '${x.new}'`)); });
+    if (!await confirmBox("아래 내용을 MES에 바로 반영합니다.\n\n" + lines.slice(0, 25).join("\n") + (lines.length > 25 ? `\n... 외 ${lines.length - 25}건` : "") + "\n\n계속할까요?", "MES 수정", "저장")) return;
+    const edits = [...S.edits.values()].map(e => ({token: e.token, idx: e.idx, changes: Object.fromEntries(Object.entries(e.changes).map(([c, x]) => [c, x.new]))}));
+    const j = await api("/api/old/save", {edits}, "MES에 저장 중...");
+    await alertBox(`${j.n}줄 수정 완료.\n[작업기록]에 기록했습니다.`);
+    S.edits.clear(); updSave(); fetch(false, true);
+  });
+  const canDelete = () => {
+    if (S.sa) { alertBox("다른 이름으로 저장 모드에서는 삭제할 수 없습니다. 모드를 끄고 하세요."); return false; }
+    if (!mode()) { alertBox("삭제는 [수정 모드]를 체크해야 할 수 있습니다."); return false; }
+    if (S.edits.size) { alertBox("저장 안 한 수정이 있습니다. 먼저 [수정 저장] 또는 [수정 취소]를 하세요."); return false; }
+    return true;
+  };
+  q(".o-fetch").onclick = () => fetch();
+  q(".o-q").oninput = e => { if (TM.rows.length) { TM.filter(e.target.value); status(); } };
+  q(".o-mode").onchange = async e => {
+    if (e.target.checked && !await confirmBox("수정 모드를 켜면 기존 금형·품번 내용을 바꿀 수 있습니다.\n(신규등록과는 별개 기능입니다)\n\n켤까요?")) e.target.checked = false;
+    else if (!e.target.checked && S.sa) { e.target.checked = true; alertBox("다른 이름으로 저장 모드를 먼저 끄세요."); }
+    q(".o-modebox").classList.toggle("mode-on", e.target.checked);
+  };
+  q(".o-sa").onchange = async e => {
+    if (e.target.checked) {
+      const idx = TM.picked();
+      if (!S.m || idx.length !== 1 || !S.m.cols.includes(S.m.code_col)) { e.target.checked = false; return alertBox("다른 이름으로 저장 모드는 금형 1개를 먼저 골라야 합니다.\n[MES에서 조회] → 금형 1개 체크(☑) 또는 클릭 → 다시 체크하세요."); }
+      if (S.edits.size) { if (!await confirmBox(`저장 안 한 수정 ${S.edits.size}건이 있습니다.\n버리고 시작할까요?`)) { e.target.checked = false; return; } S.edits.clear(); updSave(); }
+      const i = idx[0];
+      S.sa = {code: S.m.rows[i][S.m.cols.indexOf(S.m.code_col)].trim(), idx: i};
+      q(".o-mode").checked = true; q(".o-modebox").classList.add("mode-on");
+      await loadItems(i);
+      q(".o-salbl").style.display = ""; q(".o-salbl").textContent = `▶ 다른 이름으로 저장 모드: ${S.sa.code} 복사본 만드는 중 - 위·아래 칸(금형코드·금형명·품번 포함)을 더블클릭해 고친 뒤 [다른 이름으로 저장]  (원본은 안 바뀜)`;
+      TM.render();
+    } else {
+      if (S.edits.size && !await confirmBox("고쳐 놓은 내용은 저장되지 않고 사라집니다.\n다른 이름으로 저장 모드를 끌까요?")) { e.target.checked = true; return; }
+      S.edits.clear(); updSave(); S.sa = null; q(".o-salbl").style.display = "none"; TM.render(); if (S.it) TI.render();
+    }
+  };
+  q(".o-save").onclick = save;
+  q(".o-cancel").onclick = async () => { if (S.edits.size && await confirmBox(`저장 안 한 수정 ${S.edits.size}줄을 모두 되돌릴까요?`)) { S.edits.clear(); updSave(); TM.render(); if (S.it) TI.render(); } };
+  q(".o-detm").onclick = () => S.m && detail("m");
+  q(".o-deti").onclick = () => S.it && detail("i");
+  q(".o-iq").onkeydown = e => { if (e.key === "Enter") q(".o-ifind").click(); };
+  q(".o-ifind").onclick = guard(async () => {
+    const v = q(".o-iq").value.trim(); if (!v) return alertBox("찾을 금형코드나 품번 일부를 입력하세요.");
+    const d = await api("/api/old/find_items", {q: v}, "품번 테이블 검색 중..."); S.it = d; TI.set(d.heads, d.rows);
+    q(".o-ilbl").textContent = `품번 테이블 검색 '${v}' : ${d.rows.length}건`; q(".o-ilbl").className = "o-ilbl";
+  });
+  q(".o-deli").onclick = guard(async () => {
+    if (!canDelete()) return;
+    if (!S.it || !TI.sel.size) return alertBox("아래 품번 표에서 지울 줄을 체크(☑)하거나 선택하세요.");
+    const idxs = TI.picked();
+    const p = await api("/api/old/delete_items", {token: S.it.token, idxs}, "확인 중...");
+    const lines = p.lines.slice(0, 20).map(x => "  " + x).join("\n") + (p.lines.length > 20 ? `\n  ... 외 ${p.lines.length - 20}줄` : "");
+    if (!await confirmBox(`아래 ${p.lines.length}줄(금형-품번 연결)을 MES에서 삭제합니다.\n\n${lines}\n\n금형과 품번 자체는 지워지지 않고 연결만 끊깁니다.\n(삭제한 내용은 백업 파일에 저장됩니다)\n계속할까요?`, "품번 연결 삭제", "삭제", true)) return;
+    const r = await api("/api/old/delete_items", {token: S.it.token, idxs, confirm: true}, "삭제 중...");
+    await alertBox(`${r.n}줄 삭제 완료. (백업했습니다)`);
+    if (S.it.search) q(".o-ifind").click(); else { const mi = TM.picked(); if (mi.length === 1) loadItems(mi[0]); }
+  });
+  q(".o-delm").onclick = guard(async () => {
+    if (!canDelete()) return;
+    if (!S.m || !TM.sel.size) return alertBox("위 금형 표에서 지울 금형을 체크(☑)하거나 선택하세요.");
+    const j = await apiJob("/api/old/delete_mold_check", {token: S.m.token, idxs: TM.picked()}, "금형 사용 이력 확인 중...");
+    if (j.blocked.length) {
+      let msg = "아래 금형은 작업지시·실적 등 이력에서 쓰이고 있어 삭제하지 않습니다:\n\n" + j.blocked.slice(0, 10).map(x => `■ ${x.code}\n` + x.used.map(u => `     ${u}: 기록 있음`).join("\n")).join("\n");
+      msg += "\n\n※ 이력이 있는 금형을 지우면 작업지시·실적 기록이 깨집니다.\n   잘못 연결된 품번만 끊으려면 아래 품번 표에서 [선택 품번줄 삭제]를 쓰세요.";
+      if (!j.ok.length) return warnBox(msg);
+      if (!await confirmBox(msg + `\n\n나머지 ${j.ok.length}개만 삭제를 계속할까요?`, "확인", "계속", true)) return;
+    }
+    if (!j.ok.length) return alertBox("삭제할 금형을 MES에서 찾지 못했습니다. 다시 조회하세요.");
+    const lines = j.ok.slice(0, 20).map(x => `  ${x.code}  (품번 연결 ${x.items}줄)`).join("\n");
+    const warn = j.failed.length ? `\n※ 확인하지 못한 테이블 ${j.failed.length}개 (너무 크거나 오류): ${j.failed.slice(0, 5).join(", ")}\n   이 표에 이 금형 기록이 있을 수도 있으니 확실할 때만 진행하세요.` : "";
+    const one = j.ok.length === 1 ? j.ok[0].code : null;
+    const typed = await ask("금형 삭제", `아래 금형 ${j.ok.length}개를 삭제합니다 (금형 + 연결된 품번 줄).\n\n${lines}\n\n작업지시·샷수 등 다른 이력에서는 쓰이지 않는 것을 확인했습니다.${warn}\n삭제한 내용은 백업 파일에 저장됩니다.\n\n` + (one ? `확인을 위해 금형코드 ${one} 를 그대로 입력하세요:` : "확인을 위해 '삭제'라고 입력하세요:"), "");
+    if (typed === null) return;
+    const r = await api("/api/old/delete_mold", {plan: j.plan, typed}, "삭제 중...");
+    await alertBox(`금형 ${r.n}개 삭제 완료 (품번 연결 ${r.ni}줄 포함). 백업했습니다.`);
+    fetch(false);
+  });
+  q(".o-saveas").onclick = guard(async () => {
+    let i;
+    if (S.sa) i = S.sa.idx; else { if (!S.m || TM.sel.size !== 1) return alertBox("복사할 금형 1개를 체크(☑)하거나 선택하세요."); i = TM.picked()[0]; }
+    const info = await api("/api/old/items_of", {token: S.m.token, idx: i}, "품번 읽는 중...");
+    const me = (S.edits.get(ekey(S.m, i)) || {changes: {}}).changes;
+    const pend = {};
+    if (S.it && S.it.code === info.code) S.it.rows.forEach((r, k) => { const e = S.edits.get(ekey(S.it, k)); if (e) pend[r[S.it.cols.indexOf("ITEM_CODE")].trim()] = Object.fromEntries(Object.entries(e.changes).map(([c, x]) => [c, x.new])); });
+    const items = info.rows.map(r => { const orig = (r.ITEM_CODE || "").trim(), ch = pend[orig] || {}; return {on: true, orig, vals: Object.fromEntries(info.cols.map(c => [c, ch[c] !== undefined ? ch[c] : r[c]])), extra: ch, st: ["", ""]}; });
+    const codeCol = S.m.code_col, mv = c => me[c] ? me[c].new : (S.m.cols.includes(c) ? S.m.rows[i][S.m.cols.indexOf(c)] : "");
+    const okMissing = new Set();
+    const heads = {ITEM_CODE: "새 품번 *", CAVITY_QTY: "캐비티", ST_VALUE: "ST"};
+    const html = `<div class="info"><div class="tx"><b class="t">금형 ${esc(info.code)} 을(를) 새 금형으로 복사 (금형 + 품번)</b><div class="l1">원본 금형·품번은 바뀌지 않고 새 줄만 추가됩니다. 나머지 칸은 그대로 복사, 샷수 같은 누적값은 비웁니다.
+품번 하나는 금형 하나에만 연결되므로, 아래 품번은 새 품번으로 바꿔야 합니다.</div></div></div>
+      <div class="form"><span class="lab">새 금형코드 *</span><span><input type="text" id="sa_code" value="${esc(mv(codeCol).trim())}" style="width:240px"></span>
+        ${info.has_name ? `<span class="lab">새 금형명 *</span><span><input type="text" id="sa_name" value="${esc(mv("MOLD_NAME").trim())}" style="width:100%"></span>` : ""}
+        ${info.has_drawing ? `<span></span><label class="chk"><input type="checkbox" id="sa_dw"${info.drawing_same ? " checked" : ""}> 도면번호도 새 금형코드로 바꾸기</label>` : ""}</div>
+      <fieldset><legend>같이 복사할 품번 (☑ = 포함, 칸 직접 고치기)</legend><div class="tbox fix" id="sa_t"></div><button id="sa_add" style="margin-top:6px">+ 품번 추가</button></fieldset>
+      <div id="sa_lbl" class="red"></div>`;
+    dialog({title: "다른 이름으로 저장", cls: "mid", html,
+      buttons: [{t: "닫기", v: null}, {t: "MES에 등록", c: "b-green", check: async ov => {
+        items.forEach((it, k) => info.cols.forEach(c => { const el = $(`#sa_t input[data-k="${k}"][data-c="${c}"]`, ov); if (el) it.vals[c] = el.value; }));
+        const body = {token: S.m.token, idx: i, new_code: $("#sa_code", ov).value, new_name: $("#sa_name", ov) ? $("#sa_name", ov).value : "",
+          dw: $("#sa_dw", ov) ? $("#sa_dw", ov).checked : false, ok_missing: [...okMissing],
+          mold_changes: Object.fromEntries(Object.entries(me).filter(([c]) => c !== codeCol && c !== "MOLD_NAME").map(([c, x]) => [c, x.new])),
+          items: items.map(it => ({on: it.on, orig: it.orig, changes: {...it.extra, ...it.vals}}))};
+        try {
+          const r = await api("/api/old/save_as", body, "MES에 등록 중...");
+          if (r.bad) {
+            const used = items.filter(it => it.on);
+            items.forEach(it => it.st = ["", ""]);
+            Object.entries(r.bad).forEach(([k, v]) => { used[+k].st = v; if (v[0] === "warn") okMissing.add(r.codes[+k]); });
+            const ne = Object.values(r.bad).filter(v => v[0] === "err").length, nw = Object.values(r.bad).filter(v => v[0] === "warn").length;
+            $("#sa_lbl", ov).textContent = (ne ? `빨간 줄 ${ne}개를 고치세요. ` : "") + (nw ? `노란 줄 ${nw}개는 품목 마스터(ERP)에 없는 품번입니다 - 맞으면 [MES에 등록]을 한 번 더 누르세요. ` : "") + "(아직 아무것도 등록하지 않았습니다)";
+            drawItems(ov); return false;
+          }
+          for (const k of [...S.edits.keys()]) if (k.startsWith(S.m.token + "|") || (S.it && k.startsWith(S.it.token + "|"))) S.edits.delete(k);
+          updSave();
+          if (S.sa) { S.sa = null; q(".o-sa").checked = false; q(".o-salbl").style.display = "none"; }
+          await alertBox(`새 금형 ${r.code} 를 등록했습니다 (품번 연결 ${r.n}개).\n원본 ${r.old} 는 그대로입니다.`);
+          q(".o-q").value = r.code; fetch(false); return true;
+        } catch (e) { $("#sa_lbl", ov).textContent = e.message; return false; }
+      }}],
+      onOpen: ov => {
+        drawItems(ov);
+        $("#sa_add", ov).onclick = () => { items.forEach((it, k) => info.cols.forEach(c => { const el = $(`#sa_t input[data-k="${k}"][data-c="${c}"]`, ov); if (el) it.vals[c] = el.value; }));
+          const base = items[0] ? {...items[0].vals} : Object.fromEntries(info.cols.map(c => [c, ""])); base.ITEM_CODE = ""; items.push({on: true, orig: "", vals: base, extra: {}, st: ["", ""]}); drawItems(ov); };
+      }});
+    function drawItems(ov){
+      $("#sa_t", ov).innerHTML = `<table class="g"><thead><tr><th>포함</th><th>원래 품번</th>${info.cols.map(c => `<th>${heads[c] || c}</th>`).join("")}<th>상태</th></tr></thead><tbody>${items.map((it, k) =>
+        `<tr class="${it.st[0]}"><td><input type="checkbox" data-on="${k}"${it.on ? " checked" : ""}></td><td>${esc(it.orig || "(새로 추가)")}</td>${info.cols.map(c => `<td><input type="text" class="cell" data-k="${k}" data-c="${c}" value="${esc(it.vals[c])}"></td>`).join("")}<td class="wrap">${esc(it.st[1])}</td></tr>`).join("")}</tbody></table>`;
+      $$("input[data-on]", ov).forEach(el => el.onchange = () => items[+el.dataset.on].on = el.checked);
+    }
+  });
+  q(".o-tpl").onclick = guard(async () => {
+    if (!S.m || !TM.sel.size) return alertBox("복사할 금형을 선택하세요.");
+    const j = await api("/api/old/template", {token: S.m.token, idxs: TM.picked()}, "등록양식 만드는 중...");
+    showTab("new"); PAGES.new.load(j); alertBox(j.msg);
+  });
+  window.addEventListener("beforeunload", e => { if (S.edits.size) { e.preventDefault(); e.returnValue = ""; } });
+};
+
+/* ============================================================
+   ④ 소재 관리
+   ============================================================ */
+BUILD.rcv = sec => {
+  sec.insertAdjacentHTML("beforeend", `
+    <div class="bar"><span>입고일</span><input type="date" class="r-d1" value="${addDays(today(), -7)}"><span>~</span><input type="date" class="r-d2" value="${today()}">
+      ${[["오늘", 0, 0], ["어제", 1, 1], ["최근 7일", 7, 0], ["최근 30일", 30, 0]].map(([t, a, b]) => `<button class="r-qd" data-a="${a}" data-b="${b}">${t}</button>`).join("")}
+      <button class="r-mon" data-m="0">이번 달</button><button class="r-mon" data-m="-1">지난 달</button></div>
+    <div class="bar">${[["item", "품번/품명", 130], ["heat", "HEAT_NO", 130], ["rno", "입고번호", 110], ["vendor", "업체", 80]].map(([k, l, w]) => `<span>${l}</span><input type="text" class="r-f" data-k="${k}" style="width:${w}px">`).join("")}
+      <label class="chk"><input type="checkbox" class="r-cancel"> 취소건 포함</label><button class="b-blue r-fetch">MES에서 조회</button><span>표에서 찾기</span><input type="text" class="r-q" style="width:110px"><span class="sp"></span><button class="b-teal r-xls">엑셀로 저장</button></div>
+    <div class="bar act"><button class="b-green b-big r-new">+ 새 입고</button><button class="b-blue b-big r-edit">선택 입고 고치기</button>
+      <label class="chk r-modebox"><input type="checkbox" class="r-mode"> 삭제 모드</label><span class="sp"></span><button class="b-red b-big r-del" disabled>선택 입고 삭제</button></div>
+    <div class="legend">초록 = 수정·삭제 가능 &nbsp; 회색 = 생산에 사용됨(업체·담당자만 수정, 삭제 불가) &nbsp; 노랑 = 취소(반품)된 입고 &nbsp;|&nbsp; 줄 더블클릭 = 고치기 창</div>
+    <div class="r-box"></div><div class="status r-st">조회 전</div>`);
+  const q = s => $(s, sec);
+  const S = {d: null};
+  const T = new Table(q(".r-box"), {sort: true, emptyText: "[MES에서 조회]를 누르세요.", noRows: "조건에 맞는 입고가 없습니다.",
+    rowCls: i => S.d.tags[i], cellCls: (i, c) => [8, 10, 11].includes(c) ? "num" : "", onDbl: i => edit(i)});
+  const filters = () => { const f = {d1: q(".r-d1").value, d2: q(".r-d2").value, cancel: q(".r-cancel").checked}; $$(".r-f", sec).forEach(el => f[el.dataset.k] = el.value); return f; };
+  const fetch = guard(async () => { S.d = await api("/api/rcv/search", filters(), "MES에서 조회 중..."); T.set(S.d.cols, S.d.rows); T.filter(q(".r-q").value); q(".r-st").textContent = S.d.summary; });
+  S.fetch = fetch;
+  q(".r-fetch").onclick = fetch;
+  $$(".r-f", sec).forEach(el => el.onkeydown = e => { if (e.key === "Enter") fetch(); });
+  q(".r-q").oninput = e => T.rows.length && T.filter(e.target.value);
+  $$(".r-qd", sec).forEach(b => b.onclick = () => { q(".r-d1").value = addDays(today(), -b.dataset.a); q(".r-d2").value = addDays(today(), -b.dataset.b); fetch(); });
+  $$(".r-mon", sec).forEach(b => b.onclick = () => { const d = new Date(); d.setDate(1); if (+b.dataset.m < 0) d.setMonth(d.getMonth() - 1); const f = ymd(d); d.setMonth(d.getMonth() + 1); d.setDate(0); q(".r-d1").value = f; q(".r-d2").value = ymd(d); fetch(); });
+  q(".r-mode").onchange = async e => {
+    if (e.target.checked && !await confirmBox("삭제 모드를 켜면 MES 소재 입고를 지울 수 있습니다.\n(입고·LOT를 지우고 소재 재고에서 빼 줍니다)\n\n켤까요?")) e.target.checked = false;
+    q(".r-del").disabled = !e.target.checked; q(".r-modebox").classList.toggle("mode-on", e.target.checked);
+  };
+  q(".r-xls").onclick = guard(async () => { if (!S.d) return alertBox("먼저 [MES에서 조회]를 하세요."); await apiFile("/api/xlsx", {sheet: "소재입고", name: `소재입고_${q(".r-d1").value}_${q(".r-d2").value}`, cols: S.d.cols, rows: T.view.map(i => S.d.rows[i])}); });
+  q(".r-new").onclick = () => rcvForm(null);
+  q(".r-edit").onclick = () => { if (!S.d || T.sel.size !== 1) return alertBox("고칠 입고 1줄을 선택하세요. (먼저 [MES에서 조회])"); edit(T.picked()[0]); };
+  function edit(i){ if (S.d.io[i] !== 1) return alertBox("취소(반품) 줄은 고칠 수 없습니다. 원래 입고 줄을 선택하세요."); rcvForm(i); }
+  q(".r-del").onclick = guard(async () => {
+    if (!q(".r-mode").checked) return alertBox("[삭제 모드]를 체크한 뒤 하세요.");
+    if (!S.d || !T.sel.size) return alertBox("삭제할 줄을 선택하세요. (여러 줄: Ctrl/Shift+클릭)");
+    const idxs = T.picked();
+    const p = await api("/api/rcv/delete", {token: S.d.token, idxs}, "확인 중...");
+    const typed = await ask("입고 삭제 확인", p.msg, "");
+    if ((typed || "").trim() !== "삭제") return;
+    const r = await api("/api/rcv/delete", {token: S.d.token, idxs, confirm: true, typed}, "삭제 중...");
+    await (r.fail ? warnBox(r.msg) : alertBox(r.msg)); fetch();
+  });
+  async function rcvForm(i){
+    let F;
+    try { F = await api("/api/rcv/form", i === null ? {} : {token: S.d.token, idx: i}, "입고 정보 읽는 중..."); } catch (e) { return showErr(e); }
+    const v = F.vals, isNew = F.new, lock = !isNew && Object.keys(F.used).length > 0, dis = lock ? " disabled" : "";
+    const u = F.used;
+    const html = `<div class="info"><div class="tx l1">${isNew ? "입고일 → 품번 → HEAT_NO(소재로트) → 업체 → 중량(kg) → [MES에 등록].\n입고 + 재고LOT가 추가되고 소재 재고에 수량·중량이 더해집니다. 코일 여러 개는 '등록 후 창 유지'를 켜고 계속 입력하세요."
+      : "바꿀 칸만 고치고 [수정 저장]. 입고와 재고LOT를 같이 고치고, 품번·수량·중량이 바뀌면 소재 재고도 차이만큼 맞춥니다.\n생산에 사용·출고된 소재는 업체·담당자만 고칠 수 있습니다."}</div></div>
+      <div class="form">
+        <span class="lab">입고일</span><span><input type="date" id="rf_date" value="${esc(v.date || today())}"${dis}></span>
+        <span class="lab">품번(소재)</span><span style="display:flex;gap:6px;flex-wrap:wrap"><input type="text" id="rf_item" value="${esc(v.item)}" style="width:220px"${dis}><button id="rf_find"${dis}>품번 찾기</button></span>
+        <span class="note" id="rf_info">목록 = 최근 1년 입고한 소재 (많이 쓴 순)</span>
+        <span class="lab">HEAT_NO(로트)</span><span><input type="text" id="rf_heat" value="${esc(v.heat)}" style="width:240px"${dis}></span>
+        <span class="lab">업체</span><span><input type="text" id="rf_vendor" value="${esc(v.vendor)}" style="width:280px"></span>
+        <span class="lab">중량(kg)</span><span><input type="text" id="rf_kg" value="${esc(v.kg)}" inputmode="decimal" style="width:120px"${dis}></span><span class="note">MES 저장 단위: ${esc(F.unit)} (${esc(F.unit_note)})</span>
+        <span class="lab">수량(롤)</span><span><input type="text" id="rf_qty" value="${esc(v.qty)}" inputmode="numeric" style="width:80px"${dis}></span>
+        <span class="lab">담당자</span><span><input type="text" id="rf_chg" value="${esc(v.charger)}" style="width:140px"></span>
+        <span class="lab">입고번호</span><span><input type="text" id="rf_no" value="${esc(v.no)}" style="width:180px"${isNew ? "" : " readonly"}></span><span class="note" id="rf_noinfo">${isNew ? "" : "입고번호는 바꿀 수 없습니다"}</span>
+      </div>
+      ${isNew ? `<label class="chk"><input type="checkbox" id="rf_keep"> 등록 후 창 유지 (다음 코일 계속 입력)</label>` : `<div class="${lock ? "red" : "good"}">${lock ? `생산 사용 ${u.use}건 / 출고 ${u.iss}건 / 취소줄 ${u.cancel}건 → 업체·담당자만 고칠 수 있습니다` : "사용 이력 없음 - 모든 칸을 고칠 수 있습니다"}</div>`}`;
+    const vals = ov => ({date: $("#rf_date", ov).value, item: $("#rf_item", ov).value, heat: $("#rf_heat", ov).value, vendor: $("#rf_vendor", ov).value,
+      kg: $("#rf_kg", ov).value, qty: $("#rf_qty", ov).value, charger: $("#rf_chg", ov).value, no: $("#rf_no", ov).value});
+    let noAuto = isNew;
+    dialog({title: isNew ? "소재 새 입고" : `소재 입고 고치기 - ${v.no}`, cls: "mid", html,
+      buttons: [{t: "닫기", v: null}, {t: isNew ? "MES에 등록" : "수정 저장", c: "b-green b-big", check: async ov => {
+        try {
+          const path = isNew ? "/api/rcv/save_new" : "/api/rcv/save_edit", base = isNew ? {values: vals(ov)} : {token: S.d.token, idx: i, values: vals(ov)};
+          const p = await api(path, base, "확인 중...");
+          if (!await confirmBox(p.msg, isNew ? "소재 입고 등록" : "소재 입고 수정", isNew ? "등록" : "저장", !!p.warn)) return false;
+          const r = await api(path, {...base, confirm: true}, "MES에 저장 중...");
+          if (isNew) {
+            if (S.d) { if (r.date > q(".r-d2").value) q(".r-d2").value = r.date; if (r.date < q(".r-d1").value) q(".r-d1").value = r.date; }
+            fetch();
+            if ($("#rf_keep", ov).checked) { $("#rf_heat", ov).value = ""; noAuto = true; suggestNo(ov); const n = $("#rf_info", ov); n.textContent = `✔ ${r.no} 등록 완료 (${r.smsg}).  다음 코일 HEAT_NO·중량을 넣으세요.`; n.className = "note good"; $("#rf_heat", ov).focus(); return false; }
+            await alertBox(`소재 입고를 등록했습니다: ${r.no}\n${r.smsg}`);
+          } else { await alertBox(`저장했습니다: ${r.no}\n${r.res}`); fetch(); }
+          return true;
+        } catch (e) { showErr(e); return false; }
+      }}],
+      onOpen: ov => {
+        new Suggest($("#rf_item", ov), {items: F.items.map(x => [x, x]), rows: 16, onPick: () => lookup(ov)});
+        new Suggest($("#rf_vendor", ov), {items: F.vendors.map(x => [x, x]), rows: 16});
+        $("#rf_item", ov).addEventListener("change", () => lookup(ov));
+        $("#rf_item", ov).addEventListener("keydown", e => { if (e.key === "Enter") lookup(ov); });
+        $("#rf_find", ov).onclick = async () => { const x = await findItem($("#rf_item", ov).value, "/api/rcv/item_find", false); if (x !== null) { $("#rf_item", ov).value = x; lookup(ov); } };
+        if (isNew) { $("#rf_no", ov).addEventListener("keydown", () => noAuto = false); $("#rf_date", ov).onchange = () => suggestNo(ov); suggestNo(ov); }
+        if (v.item) lookup(ov);
+      }});
+    async function lookup(ov){
+      const it = $("#rf_item", ov).value.trim(), n = $("#rf_info", ov);
+      if (!it) return;
+      try {
+        const j = await api("/api/rcv/item_lookup", {item: it}, "품번 확인 중...");
+        n.textContent = j.text; n.className = "note " + (j.n ? "good" : "bad");
+        if (isNew && j.last_vendor && !$("#rf_vendor", ov).value.trim()) $("#rf_vendor", ov).value = F.vendors.find(x => x.split(" | ")[0] === j.last_vendor) || j.last_vendor;
+      } catch (e) {}
+    }
+    async function suggestNo(ov){
+      if (!noAuto) return;
+      try {
+        const j = await api("/api/rcv/next_no", {date: $("#rf_date", ov).value}, "입고번호 확인 중...");
+        $("#rf_no", ov).value = j.no; noAuto = true;
+        const n = $("#rf_noinfo", ov);
+        if (j.same) { n.textContent = `제안 번호 (같은 날 마지막: ${j.same})`; n.className = "note good"; }
+        else { n.textContent = `이 날 첫 입고 - 최근 번호 ${F.last_no} 와 형식을 비교하세요`; n.className = "note bad"; }
+      } catch (e) {}
+    }
+  }
+};
+
+/* ============================================================
+   ⑤ SPM 관리
+   ============================================================ */
+BUILD.spm = sec => {
+  sec.insertAdjacentHTML("beforeend", `
+    <div class="bar"><span>찾기</span><input type="text" class="s-q" style="width:200px"><button class="b-green b-big s-new">+ 새로 등록</button><button class="b-blue b-big s-edit">선택 SPM 고치기</button>
+      <button class="b-red b-big s-del">선택 줄 삭제</button><button class="s-miss">SPM 없는 품번 찾기 (최근 30일 작업)</button><span class="sp"></span>
+      <button class="b-teal s-imp">엑셀에서 가져오기</button><button class="b-teal s-down">엑셀 파일 받기</button><button class="b-blue s-load">새로고침</button></div>
+    <div class="legend">줄 더블클릭 = 고치기.  계획수량 = SPM × 60 × 근무시간 × 캐비티.  서버의 spm.xlsx 에 저장 (MES는 바뀌지 않음, PC 프로그램과 같은 파일)</div>
+    <div class="s-box"></div><div class="status s-st"></div>`);
+  const q = s => $(s, sec);
+  const T = new Table(q(".s-box"), {sort: true, emptyText: "읽는 중...", noRows: "등록된 SPM이 없습니다.", cellCls: (i, c) => c === 1 ? "num" : "", onDbl: i => edit(T.rows[i]), onSel: () => st()});
+  const st = () => q(".s-st").textContent = `SPM 등록 ${T.rows.length.toLocaleString()}개` + (T.q ? `  /  찾기 ${T.view.length.toLocaleString()}개` : "") + (T.sel.size ? `  /  선택 ${T.sel.size}` : "");
+  const load = guard(async (sel) => {
+    const j = await api("/api/spm/list", {}, "SPM 읽는 중...");
+    T.set(["품번", "SPM", "수정일", "수정자", "비고"], j.rows); T.filter(q(".s-q").value);
+    if (sel) { const i = T.rows.findIndex(r => r[0] === sel); if (i >= 0) { T.sel.add(i); T.refreshSel(); } }
+    st();
+  });
+  async function edit(r, item, note){
+    const isNew = !r;
+    const res = await dialog({title: isNew ? "SPM 새로 등록" : `SPM 고치기 - ${r[0]}`,
+      html: `<div class="form"><span class="lab">품번</span><span><input type="text" id="sp_it" value="${esc(isNew ? (item || "") : r[0])}" style="width:220px"${isNew ? "" : " readonly"}></span>
+        <span class="lab">SPM</span><span><input type="text" id="sp_v" value="${esc(isNew ? "" : r[1])}" inputmode="decimal" style="width:100px"> <span class="hint">(분당 타수)</span></span>
+        <span class="lab">비고</span><span><input type="text" id="sp_n" value="${esc(isNew ? (note || "") : r[4])}" style="width:100%"></span></div>`,
+      buttons: [{t: "취소", v: null}, {t: "저장", c: "b-green", get: ov => ({item: $("#sp_it", ov).value, spm: $("#sp_v", ov).value, note: $("#sp_n", ov).value})}],
+      onOpen: ov => { if (!isNew || item) setTimeout(() => $("#sp_v", ov).focus(), 50); $$("input", ov).forEach(el => el.addEventListener("keydown", e => { if (e.key === "Enter") $(".ft button:last-child", ov).click(); })); }});
+    if (!res) return;
+    try {
+      let j = await api("/api/spm/save", {...res, new: isNew}, "저장 중...");
+      if (j.ask) { if (!await confirmBox(j.ask)) return; j = await api("/api/spm/save", {...res, new: isNew, force: true}, "저장 중..."); }
+      load(j.item);
+    } catch (e) { showErr(e); }
+  }
+  q(".s-q").oninput = e => { T.filter(e.target.value); st(); };
+  q(".s-new").onclick = () => edit(null);
+  q(".s-edit").onclick = () => { if (T.sel.size !== 1) return alertBox("고칠 줄 1개를 선택하세요."); edit(T.rows[T.picked()[0]]); };
+  q(".s-del").onclick = guard(async () => {
+    const sel = T.picked().map(i => T.rows[i][0]);
+    if (!sel.length) return alertBox("삭제할 줄을 선택하세요. (여러 줄: Ctrl/Shift+클릭)");
+    if (!await confirmBox(`SPM ${sel.length}개를 삭제합니다.\n${sel.slice(0, 10).join(", ")}${sel.length > 10 ? ` 외 ${sel.length - 10}개` : ""}\n\n계속할까요?`, "SPM 삭제", "삭제", true)) return;
+    await api("/api/spm/delete", {items: sel}, "삭제 중..."); load();
+  });
+  q(".s-load").onclick = () => load();
+  q(".s-down").onclick = guard(() => apiFile("/api/spm/download", {}));
+  q(".s-imp").onclick = guard(async () => {
+    const f = await pickFile(); if (!f) return;
+    let j = await api("/api/spm/import", {b64: f.b64, name: f.name}, "엑셀 읽는 중...");
+    if (j.ask) { if (!await confirmBox(j.ask)) return; j = await api("/api/spm/import", {b64: f.b64, name: f.name, confirm: true}, "반영 중..."); }
+    await alertBox(j.msg); load();
+  });
+  q(".s-miss").onclick = guard(async () => {
+    const j = await api("/api/spm/missing", {}, "최근 30일 작업 품번 확인 중...");
+    if (!j.rows.length) return alertBox(`최근 30일 작업 품번 ${j.total}개 모두 SPM이 등록되어 있습니다.`);
+    dialog({title: `SPM 없는 품번 - 최근 30일 작업 ${j.rows.length}개`, cls: "mid", html: `<div class="hint">줄 더블클릭 = 이 품번 SPM 등록.  SPM이 없으면 최근 생산 기록으로 계산합니다.</div><div class="tbox fix mt"></div>`,
+      onOpen: ov => new Table($(".mt", ov), {check: false, sort: true, onDbl: i => edit(null, j.rows[i][0], j.rows[i][1])}).set(["품번", "품명", "작업 횟수", "마지막 작업일", "최근 설비"], j.rows)});
+  });
+  load();
+};
+
+/* ============================================================
+   금형 간편등록 (숨김 탭)
+   ============================================================ */
+BUILD.quick = sec => {
+  const QF = META.quick_fields;
+  sec.insertAdjacentHTML("beforeend", `
+    <fieldset><legend>① 비슷한 기존 금형 고르기 (회사코드·그룹 등 나머지 칸을 이 금형에서 복사합니다)</legend>
+      <div class="bar"><input type="text" class="k-bq" style="width:180px" placeholder="금형코드·금형명 일부"><button class="b-blue k-find">찾기</button><select class="k-base" style="min-width:280px;max-width:100%"></select><span class="hint k-blbl">금형코드·금형명 일부를 넣고 [찾기] (비우고 누르면 전체 목록)</span></div></fieldset>
+    <fieldset><legend>② 새 금형 정보</legend><div class="grid4">${QF.map(([c, l]) => `<label>${esc(l)}</label><input type="text" data-c="${c}">`).join("")}</div></fieldset>
+    <fieldset style="flex:1;display:flex;flex-direction:column;min-height:240px"><legend>③ 이 금형으로 만드는 품번 (품번 하나는 금형 하나에만 연결됩니다)</legend>
+      <div class="bar"><button class="b-green k-add">+ 품번 추가</button><button class="k-del">선택 삭제</button><span class="hint">원소재·단위중량·캐비티는 칸에서 바로 고치기.  피치당 소재중량(g) = 두께×폭×피치×7.85÷1000 (스크랩 포함, 캐비티 2↑는 ÷캐비티)</span></div>
+      <div class="k-box tbox"></div></fieldset>
+    <div class="bar"><button class="b-blue b-big k-check">④ 검사</button><button class="b-green b-big k-reg">⑤ MES에 등록</button><button class="k-reset">새로 시작</button><b class="k-lbl">(검사 전)</b></div>`);
+  const q = s => $(s, sec);
+  const K = {base: "", items: [], drawFollow: false, sel: new Set()};
+  const field = c => $(`input[data-c="${c}"]`, sec);
+  const invalidate = () => { q(".k-lbl").textContent = "(검사 전)"; q(".k-lbl").className = "k-lbl"; };
+  function draw(){
+    q(".k-box").innerHTML = `<table class="g"><thead><tr><th></th><th>품번</th><th>품명</th><th>원소재(코일) 코드</th><th>피치당 소재중량(g)</th><th>캐비티</th><th>상태</th></tr></thead><tbody>${K.items.map((it, k) =>
+      `<tr class="${it.level || ""}"><td><input type="checkbox" data-s="${k}"${K.sel.has(k) ? " checked" : ""}></td><td>${esc(it.item)}</td><td>${esc(it.name)}</td>
+        <td><input type="text" class="cell" data-k="${k}" data-f="raw" value="${esc(it.raw)}"></td><td><input type="text" class="cell" data-k="${k}" data-f="qpu" value="${esc(it.qpu)}"></td>
+        <td><input type="text" class="cell" data-k="${k}" data-f="cav" value="${esc(it.cav)}" style="min-width:60px"></td><td class="wrap">${esc(it.note)}</td></tr>`).join("")}</tbody></table>`;
+    $$("input[data-f]", sec).forEach(el => el.oninput = () => { K.items[+el.dataset.k][el.dataset.f] = el.value; invalidate(); });
+    $$("input[data-s]", sec).forEach(el => el.onchange = () => el.checked ? K.sel.add(+el.dataset.s) : K.sel.delete(+el.dataset.s));
+  }
+  const body = () => ({base: K.base, fields: Object.fromEntries(QF.map(([c]) => [c, field(c).value])), items: K.items});
+  q(".k-bq").onkeydown = e => { if (e.key === "Enter") q(".k-find").click(); };
+  q(".k-find").onclick = guard(async () => {
+    const j = await api("/api/quick/find", {q: q(".k-bq").value}, "금형 찾는 중...");
+    q(".k-base").innerHTML = j.rows.map(([a, b]) => `<option value="${esc(a)}">${esc(a)}  |  ${esc(b)}</option>`).join("");
+    if (!j.rows.length) { q(".k-blbl").textContent = "찾은 금형이 없습니다."; q(".k-blbl").className = "hint red k-blbl"; return; }
+    q(".k-blbl").textContent = `${j.rows.length}개 찾음 - 목록에서 고르면 아래 칸이 채워집니다`; q(".k-blbl").className = "hint k-blbl";
+    loadBase();
+  });
+  q(".k-base").onchange = () => loadBase();
+  const loadBase = guard(async () => {
+    const code = q(".k-base").value; if (!code) return;
+    const j = await api("/api/quick/base", {code}, "기준 금형 읽는 중...");
+    K.base = code; K.drawFollow = j.drawing_follows;
+    Object.entries(j.vals).forEach(([c, v]) => { const el = field(c); if (el) el.value = v; });
+    const need = field("MOLD_CODE").value.trim() ? "" : "  → 새 금형코드를 넣고 금형명을 고치세요";
+    q(".k-blbl").textContent = `기준: ${code} (${j.name})${need}` + (j.has_link ? "" : "  ※ 이 금형은 품번 연결이 없어 품번연결 칸은 다른 금형 형식으로 채웁니다");
+    invalidate();
+  });
+  field("MOLD_CODE").oninput = () => { if (K.drawFollow && field("DRAWING_NO")) field("DRAWING_NO").value = field("MOLD_CODE").value.trim(); invalidate(); };
+  $$(".grid4 input", sec).forEach(el => { if (el.dataset.c !== "MOLD_CODE") el.oninput = invalidate; });
+  q(".k-add").onclick = guard(async () => {
+    const code = await ask("품번 추가", "제품 품번을 입력하세요:", ""); if (!code || !code.trim()) return;
+    if (K.items.some(it => it.item.toUpperCase() === code.trim().toUpperCase())) return alertBox("이미 목록에 있는 품번입니다.");
+    const it = await api("/api/quick/item", {item: code.trim(), base: K.base}, "품번 확인 중...");
+    const cav = field("CAVITY_QTY").value.trim();
+    it.cav = /^\d+(\.\d+)?$/.test(cav) ? cav : "";
+    K.items.push(it); draw(); invalidate();
+  });
+  q(".k-del").onclick = () => { K.items = K.items.filter((_, k) => !K.sel.has(k)); K.sel.clear(); draw(); invalidate(); };
+  const showRes = j => {
+    K.items = j.items; draw();
+    q(".k-lbl").textContent = (j.nerr ? `오류 ${j.nerr}건` : "등록 가능") + (j.nwarn ? ` / 경고 ${j.nwarn}건` : "");
+    q(".k-lbl").className = "k-lbl " + (j.nerr ? "red" : "good");
+  };
+  q(".k-check").onclick = guard(async () => {
+    if (!K.base) return alertBox("① 비슷한 기존 금형을 먼저 고르세요.");
+    const j = await api("/api/quick/check", body(), "검사 중..."); showRes(j); if (j.errs.length) warnBox(j.errs.join("\n"));
+  });
+  q(".k-reg").onclick = guard(async () => {
+    if (!K.base) return alertBox("① 비슷한 기존 금형을 먼저 고르세요.");
+    const p = await api("/api/quick/register", body(), "검사 중...");
+    if (p.errs) { showRes(p); return warnBox("④ 검사에서 오류가 있습니다. 빨간 줄과 메시지를 확인하세요.\n\n" + p.errs.join("\n")); }
+    if (!await confirmBox(p.msg, "MES에 등록", "등록")) return;
+    const r = await api("/api/quick/register", {...body(), confirm: true}, "MES에 등록 중...");
+    await alertBox(r.msg); reset(true);
+  });
+  function reset(keep){ QF.forEach(([c]) => { if (["MOLD_CODE", "MOLD_NAME"].includes(c) || !keep) field(c).value = ""; }); K.items = []; K.sel.clear(); draw(); if (!keep) { K.base = ""; q(".k-base").innerHTML = ""; q(".k-blbl").textContent = "기존 금형코드나 금형명 일부를 넣고 [찾기]"; } invalidate(); }
+  q(".k-reset").onclick = () => reset(false);
+  q(".k-bq").value = "";
+  draw();
+};
+
+/* ============================================================
+   엑셀 대량등록 (숨김 탭)
+   ============================================================ */
+BUILD.new = sec => {
+  sec.insertAdjacentHTML("beforeend", `
+    <div class="bar"><button class="b-teal b-big n-tpl">엑셀 양식 만들기</button><button class="b-teal b-big n-load">엑셀 불러오기</button><span class="sep"></span>
+      <button class="b-blue b-big n-check">① 검사</button><button class="b-green b-big n-reg">② MES 등록</button><span class="sp"></span>
+      <label class="chk"><input type="checkbox" class="n-allow"> 기존 금형 품번추가 허용</label><button class="b-teal n-down">엑셀 받기 (검사결과 표시)</button></div>
+    <div class="hint n-file">불러온 파일 없음</div>
+    <div class="split"><b class="n-lm">[금형 시트]</b><div class="n-mold tbox tb-top"></div><b class="n-li">[품번 시트]</b><div class="n-item tbox tb-bot"></div></div>
+    <div class="status n-sum"></div>`);
+  const q = s => $(s, sec);
+  const N = {tok: null, name: ""};
+  const tables = {mold: new Table(q(".n-mold"), {check: false, emptyText: "[엑셀 불러오기]를 하세요.", rowCls: i => cls("mold", i), onDbl: i => detail("mold", i)}),
+                  item: new Table(q(".n-item"), {check: false, emptyText: "", rowCls: i => cls("item", i), onDbl: i => detail("item", i)})};
+  const cls = (p, i) => ({"오류": "err", "경고": "warn", "OK": "ok"})[N.v.parts[p].rows[i].status] || "";
+  function detail(p, i){ const r = N.v.parts[p].rows[i]; if (r.msg) alertBox(r.msg.replace(/, /g, "\n"), `${p === "mold" ? "금형" : "품번"} 시트 ${r.rno}행`); }
+  function load(v){
+    N.tok = v.token; N.v = v; q(".n-allow").checked = v.allow;
+    q(".n-file").textContent = N.tok ? `불러온 파일: ${v.name || N.name || "(서버에서 만든 양식)"}` : "불러온 파일 없음";
+    if (v.name) N.name = v.name;
+    const txt = [];
+    for (const p of ["mold", "item"]) {
+      const d = v.parts[p], t = tables[p], lb = q(p === "mold" ? ".n-lm" : ".n-li"), nm = p === "mold" ? "금형" : "품번";
+      if (!d.enabled) { t.empty("(품번 테이블 사용 안 함)"); lb.textContent = `[${nm} 시트] - 사용 안 함`; continue; }
+      t.set(["행", ...d.names, "검사결과"], d.rows.map(r => [r.rno, ...r.vals, r.msg]));
+      const n = {OK: 0, 경고: 0, 오류: 0}; d.rows.forEach(r => r.status && n[r.status]++);
+      const checked = d.rows.some(r => r.status);
+      const s = checked ? `${nm} ${d.rows.length}건 (정상 ${n.OK} / 경고 ${n["경고"]} / 오류 ${n["오류"]})` : `${nm} ${d.rows.length}건`;
+      lb.textContent = `[${nm} 시트 -> ${d.table}]   ${s}`; txt.push(s);
+    }
+    q(".n-sum").textContent = txt.join("   |   ");
+  }
+  sec.load = load;
+  q(".n-tpl").onclick = guard(() => apiFile("/api/bulk/template", {}, "양식 만드는 중..."));
+  q(".n-load").onclick = guard(async () => { const f = await pickFile(); if (!f) return; const v = await api("/api/bulk/upload", {b64: f.b64, name: f.name}, "엑셀 읽는 중..."); load(v); if (v.msg) alertBox(v.msg); });
+  q(".n-check").onclick = guard(async () => { if (!N.tok) return alertBox("먼저 [엑셀 불러오기]를 하세요."); const v = await api("/api/bulk/check", {token: N.tok}, "검사 중..."); load(v); (v.nerr ? warnBox : alertBox)(v.msg); });
+  q(".n-reg").onclick = guard(async () => {
+    if (!N.tok) return alertBox("먼저 [엑셀 불러오기]를 하세요.");
+    const p = await api("/api/bulk/register", {token: N.tok}, "검사 중...");
+    load(p);
+    if (p.nerr) return warnBox(p.msg);
+    if (!await confirmBox(p.msg, "MES 등록", "등록")) return;
+    const r = await api("/api/bulk/register", {token: N.tok, confirm: true}, "MES에 등록 중...");
+    load(r); await alertBox(r.msg);
+  });
+  q(".n-down").onclick = guard(async () => { if (!N.tok) return alertBox("먼저 [엑셀 불러오기]를 하세요."); await apiFile("/api/bulk/download", {token: N.tok, name: (N.name || "금형등록").replace(/\.xlsx?$/i, "") + "_결과.xlsx"}); });
+  q(".n-allow").onchange = guard(async e => { await api("/api/set/save", {allow: e.target.checked}, "저장 중..."); });
+};
+
+/* ============================================================
+   엑셀칸 설정 (숨김 탭)
+   ============================================================ */
+BUILD.map = sec => {
+  sec.insertAdjacentHTML("beforeend", `
+    <div class="bar"><label class="chk"><input type="radio" name="m_p" value="mold" checked> 금형 테이블</label><label class="chk"><input type="radio" name="m_p" value="item"> 품번 테이블</label><span class="sep"></span>
+      <span>테이블</span><input type="text" class="m-tbl" readonly style="width:200px"><span class="m-cl">금형코드 컬럼</span><input type="text" class="m-cc" readonly style="width:140px">
+      <label class="chk"><input type="checkbox" class="m-on"> 품번 테이블도 등록</label></div>
+    <div class="bar"><button class="b-blue b-big m-fetch">DB컬럼 가져오기</button><button class="m-up">▲</button><button class="m-dn">▼</button><button class="b-blue m-find">테이블 찾기</button><span class="sp"></span><button class="b-green b-big m-save">저장</button></div>
+    <div class="legend">칸 더블클릭으로 수정 (Y/N·형식은 더블클릭하면 바뀜).  기본값: SYSDATE / {USER}=등록자 / {COPY}=기준 금형 값 복사 / 고정값.   존재확인 예: ICOM_ITEM.ITEM_CODE</div>
+    <div class="m-box"></div>`);
+  const q = s => $(s, sec);
+  let MP = null, cur = "mold";
+  const T = new Table(q(".m-box"), {emptyText: "읽는 중...", rowCls: i => MP.parts[cur].columns[i].col === MP.parts[cur].codecol ? "ok" : (MP.parts[cur].columns[i].use ? "" : "off"),
+    onDbl: (i, c) => editCell(i, c)});
+  const draw = sel => {
+    const p = MP.parts[cur];
+    q(".m-tbl").value = p.table; q(".m-cc").value = p.codecol; q(".m-cl").textContent = cur === "mold" ? "금형코드 컬럼" : "금형코드 연결 컬럼";
+    q(".m-on").checked = !!MP.parts.item.enabled; q(".m-on").disabled = cur !== "item";
+    T.set(MP.fields.map(f => f[1]), p.columns.map(c => MP.fields.map(([k, , , kind]) => kind === "yn" ? (c[k] ? "Y" : "N") : (kind === "int" ? (c[k] ? String(c[k]) : "") : (c[k] || "")))));
+    if (sel !== undefined) { T.sel.add(sel); T.refreshSel(); }
+  };
+  const load = guard(async () => { MP = await api("/api/map/get", {}, "설정 읽는 중..."); draw(); });
+  async function editCell(i, j){
+    const [key, title, , kind] = MP.fields[j], c = MP.parts[cur].columns[i];
+    if (kind === "yn") c[key] = !c[key];
+    else if (kind === "type") { const o = ["TEXT", "NUM", "DATE"]; c[key] = o[(o.indexOf(c[key]) + 1) % 3]; }
+    else { const v = await ask(title, `${c.col} - ${title}`, c[key] ?? ""); if (v === null) return; c[key] = kind === "int" ? (/^\d+$/.test(v.trim()) ? +v.trim() : 0) : (["col", "ref"].includes(key) ? v.trim().toUpperCase() : v.trim()); }
+    draw(i);
+  }
+  $$("input[name=m_p]", sec).forEach(r => r.onchange = () => { cur = r.value; draw(); });
+  q(".m-on").onchange = e => MP.parts.item.enabled = e.target.checked;
+  const move = d => { if (T.sel.size !== 1) return; const i = T.picked()[0], k = i + d, l = MP.parts[cur].columns; if (k < 0 || k >= l.length) return; [l[i], l[k]] = [l[k], l[i]]; draw(k); };
+  q(".m-up").onclick = () => move(-1); q(".m-dn").onclick = () => move(1);
+  q(".m-fetch").onclick = guard(async (e, tbl) => {
+    const table = (typeof tbl === "string" ? tbl : q(".m-tbl").value).trim().toUpperCase();
+    if (!table) return alertBox("테이블명이 없습니다. [테이블 찾기]를 하세요.");
+    if (!await confirmBox(`${cur === "mold" ? "금형" : "품번"} 매핑을 ${table} 구조로 덮어씁니다. 계속할까요?`)) return;
+    const j = await api("/api/map/fetch_cols", {p: cur, table}, "컬럼 읽는 중...");
+    MP.parts[cur].columns = j.columns; MP.parts[cur].table = table; if (j.code) MP.parts[cur].codecol = j.code; draw(); alertBox(j.msg);
+  });
+  q(".m-save").onclick = guard(async () => { const j = await api("/api/map/save", {parts: MP.parts}, "저장 중..."); await alertBox(j.msg); load(); });
+  q(".m-find").onclick = guard(async () => {
+    const j = await api("/api/map/find_tables", {}, "금형 관련 테이블 찾는 중...");
+    let pick = null;
+    await dialog({title: "금형 테이블 찾기", cls: "wide", html: `<div class="hint">★ = 유력. 더블클릭 = 미리보기(500행). 지금 탭에서는 테이블 이름 확인용입니다 (금형·품번 테이블은 고정).</div><div class="tbox ft2"></div>`,
+      onOpen: ov => { const t = new Table($(".ft2", ov), {check: false, sort: true, rowCls: i => j.rows[i][0] ? "ok" : "", onDbl: i => preview(j.rows[i][1])}); t.set(j.cols, j.rows); }});
+  });
+  load();
+};
+async function preview(t){
+  try {
+    const j = await api("/api/table/preview", {table: t}, "미리보기 읽는 중...");
+    dialog({title: `미리보기 - ${t}`, cls: "wide", html: `<input type="text" class="pq" placeholder="검색" style="width:220px"><div class="hint">${j.rows.length.toLocaleString()}행 불러옴 · 줄 더블클릭 = 세로로 자세히</div><div class="tbox pt"></div>`,
+      onOpen: ov => { const tb = new Table($(".pt", ov), {check: false, sort: true, onDbl: i => vertical(`${t} - ${i + 1}번째 줄`, () => j.cols.map((h, k) => ({col: h, name: "", val: j.rows[i][k], type: ""})))}); tb.set(j.cols, j.rows); $(".pq", ov).oninput = e => tb.filter(e.target.value); }});
+  } catch (e) { showErr(e); }
+}
+
+/* ============================================================
+   MES 구조조사 / 전후 비교 (숨김 탭, 조회만)
+   ============================================================ */
+function codeWindow(title, text){
+  dialog({title, cls: "wide", html: `<div class="bar"><span>찾기</span><input type="text" class="cq" style="width:220px"><span class="hint cn"></span><span class="sp"></span><button class="cc">전체 복사</button></div><pre class="code"></pre>`,
+    onOpen: ov => {
+      const p = $("pre.code", ov);
+      const paint = qv => {
+        let h = esc(text).replace(/^.*\b(INSERT|UPDATE|DELETE|MERGE)\b.*$/gim, m => `<b style="color:#c00000">${m}</b>`);
+        let n = 0;
+        if (qv) { const re = new RegExp(qv.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "gi"); h = h.replace(/(<[^>]+>)|([^<]+)/g, (m, tag, txt) => tag ? tag : txt.replace(re, x => { n++; return `<mark>${x}</mark>`; })); }
+        p.innerHTML = h; $(".cn", ov).textContent = qv ? `${n}곳` : "";
+        const f = $("mark", p); if (f) f.scrollIntoView({block: "center"});
+      };
+      $(".cq", ov).oninput = e => paint(e.target.value.trim());
+      $(".cc", ov).onclick = async () => { try { await navigator.clipboard.writeText(text); $(".cn", ov).textContent = "전체 복사됨"; } catch (e) { $(".cn", ov).textContent = "복사 안 됨 (브라우저 제한) - 직접 선택해서 복사하세요"; } };
+      paint("");
+    }});
+}
+BUILD.find = sec => {
+  sec.insertAdjacentHTML("beforeend", `
+    <div class="bar"><button class="b-blue f-b" data-k="table">① 관련 테이블</button><button class="b-blue f-b" data-k="prog">② 작업지시 만드는 프로그램</button><button class="b-blue f-b" data-k="seq">③ 번호 생성기</button><button class="b-blue f-b" data-k="trg">④ 트리거</button><span class="sep"></span>
+      <span>프로그램 내용 검색</span><input type="text" class="f-q" style="width:200px"><button class="b-blue f-s">검색</button><span class="sp"></span><button class="f-txt">선택 항목 내용 txt 저장</button><button class="b-teal f-xls">엑셀로 저장</button></div>
+    <div class="legend f-msg">버튼을 누르면 결과가 나옵니다. 줄을 더블클릭하면 자세히 봅니다.</div><div class="f-box"></div>`);
+  const q = s => $(s, sec);
+  const F = {kind: null, d: null};
+  const T = new Table(q(".f-box"), {sort: true, emptyText: "", rowCls: i => F.d.tags[i] || "", cellCls: () => "", onDbl: i => detail(i)});
+  const run = guard(async (kind, extra) => { F.d = await api("/api/find", {kind, ...extra}, "MES 구조 조사 중... (조회만)"); F.kind = kind; T.set(F.d.cols, F.d.rows); q(".f-msg").textContent = F.d.msg; });
+  $$(".f-b", sec).forEach(b => b.onclick = () => run(b.dataset.k));
+  q(".f-s").onclick = () => run("src", {q: q(".f-q").value});
+  q(".f-q").onkeydown = e => { if (e.key === "Enter") q(".f-s").click(); };
+  const typ = r => ({prog: r[1], trg: "TRIGGER", src: r[1]})[F.kind];
+  const detail = guard(async i => {
+    const r = F.d.rows[i];
+    if (F.kind === "table") { const j = await api("/api/find/columns", {table: r[0]}, "컬럼 읽는 중..."); return dialog({title: `${r[0]} 컬럼 구조`, cls: "wide", html: `<div class="tbox ct"></div>`, onOpen: ov => new Table($(".ct", ov), {check: false, sort: true}).set(j.cols, j.rows)}); }
+    if (["prog", "trg", "src"].includes(F.kind)) { const j = await api("/api/find/source", {name: r[0], typ: typ(r)}, "내용 읽는 중..."); codeWindow(`${typ(r)} ${r[0]}`, j.head + "\n\n" + j.text); }
+  });
+  q(".f-xls").onclick = guard(async () => { if (!F.d) return alertBox("먼저 조회하세요."); await apiFile("/api/xlsx", {sheet: F.kind, name: `MES조사_${F.kind}`, cols: F.d.cols, rows: T.view.map(i => F.d.rows[i])}); });
+  q(".f-txt").onclick = guard(async () => {
+    if (!["prog", "trg", "src"].includes(F.kind)) return alertBox("② 프로그램, ④ 트리거, 내용 검색 결과에서 쓸 수 있습니다.");
+    const idx = T.sel.size ? T.picked() : T.view, seen = new Set(), items = [];
+    idx.forEach(i => { const r = F.d.rows[i], k = r[0] + "|" + typ(r); if (!seen.has(k)) { seen.add(k); items.push([r[0], typ(r)]); } });
+    if (items.length > 50 && !await confirmBox(`${items.length}개입니다. 모두 저장할까요?`)) return;
+    await apiFile("/api/find/export_src", {items}, "내용 모으는 중...");
+  });
+};
+BUILD.diff = sec => {
+  sec.insertAdjacentHTML("beforeend", `
+    <div style="color:var(--title);font-weight:bold">순서:  ① [찍기 전 저장]  →  ② MES 화면에서 작업지시 1건 내기  →  ③ [찍은 후 비교]   (②는 빨리 하세요. 그 사이 다른 작업도 같이 잡힙니다)</div>
+    <div class="bar"><label class="chk"><input type="radio" name="d_sc" value="kw" checked> 관련 테이블만 (빠름)</label><label class="chk"><input type="radio" name="d_sc" value="all"> 스키마 전체 (느림, 빠짐없이)</label>
+      <button class="b-blue b-big d-snap">① 찍기 전 저장</button><button class="b-blue b-big d-cmp">③ 찍은 후 비교</button><span class="sp"></span>
+      <label class="chk"><input type="checkbox" class="d-hide" checked> 변화 없는 테이블 숨김</label><button class="b-teal d-xls">결과 엑셀 저장</button></div>
+    <div class="legend d-msg"></div><div class="d-box"></div>`);
+  const q = s => $(s, sec);
+  let D = null;
+  const T = new Table(q(".d-box"), {check: false, emptyText: "", rowCls: i => D.tags[i], onDbl: i => detail(i)});
+  const show = d => { D = d; T.set(d.cols, d.rows); q(".d-msg").textContent = d.msg; };
+  const view = guard(async () => show(await api("/api/diff/view", {hide: q(".d-hide").checked}, "읽는 중...")));
+  q(".d-snap").onclick = guard(async () => {
+    const r = await apiJob("/api/diff/snap", {scope: $("input[name=d_sc]:checked", sec).value}, "상태 저장 중...");
+    T.empty(""); q(".d-msg").textContent = r.msg + "  → 이제 MES에서 작업지시 1건을 내고 [③ 찍은 후 비교]를 누르세요."; q(".d-msg").className = "legend d-msg red";
+    alertBox(r.msg + "\n\n이제 MES 화면에서 작업지시 1건을 내세요.\n다 되면 [③ 찍은 후 비교]를 누르세요.");
+  });
+  q(".d-cmp").onclick = guard(async () => {
+    const r = await apiJob("/api/diff/compare", {}, "비교 중..."); q(".d-msg").className = "legend d-msg";
+    await view(); alertBox(`비교 완료.\n\n초록 = 새 줄이 생김 / 주황 = 기존 줄이 바뀜 / 빨강 = 줄이 없어짐\n줄을 더블클릭하면 실제 내용을 봅니다.`);
+  });
+  q(".d-hide").onchange = view;
+  q(".d-xls").onclick = guard(() => apiFile("/api/diff/export", {}));
+  const detail = guard(async i => {
+    const j = await api("/api/diff/detail", {i: D.view[i]}, "읽는 중...");
+    if (j.msg) return alertBox(j.msg);
+    dialog({title: j.title, cls: "wide", html: `<div class="hint">초록 = 새로 생긴 줄, 주황 = 값이 바뀐 줄 (지금 값). ${esc(j.note)}  · 줄 더블클릭 = 세로로</div><div class="tbox dt"></div>`,
+      onOpen: ov => new Table($(".dt", ov), {check: false, rowCls: k => j.tags[k], onDbl: k => vertical(`${j.title} - ${j.rows[k][0]}`, () => j.cols.map((h, c) => ({col: h, name: "", val: j.rows[k][c], type: ""})))}).set(j.cols, j.rows)});
+  });
+  sec.onShow = () => { if (!D) view(); };
+};
+
+/* ============================================================
+   환경설정 / 작업기록 / 사용법
+   ============================================================ */
+BUILD.set = sec => {
+  sec.insertAdjacentHTML("beforeend", `<div class="st-body" style="background:#fff;border:1px solid var(--line);border-radius:6px;padding:14px;overflow:auto"></div>`);
+  const body = $(".st-body", sec);
+  const load = guard(async () => {
+    const j = await api("/api/set/get", {}, "설정 읽는 중...");
+    body.innerHTML = `<div class="form" style="grid-template-columns:170px 1fr">${j.fields.map(([p, l, h, v]) => `<span class="lab">${esc(l)}</span><span><input type="text" data-p="${esc(p)}" value="${esc(v)}" style="width:min(380px,100%)"> <span class="hint">${esc(h)}</span></span>`).join("")}
+      <span class="lab">웹 접속 PIN</span><span><input type="text" class="st-pin" value="${esc(j.web_pin)}" style="width:140px"> <span class="hint">비워두면 누구나 접속. 넣으면 처음 접속할 때 PIN을 물어봅니다 (이 웹 화면 전용)</span></span></div>
+      <div class="bar" style="margin:12px 0"><button class="b-green b-big st-save">저장</button><button class="b-blue b-big st-test">연결 테스트</button></div>
+      <div class="hint">접속 계정: ${esc(j.db_user)} (고정)   금형 테이블: ICOM_MOLD / 품번 테이블: ICOM_MOLD_ITEM (고정)</div>
+      <div style="margin-top:10px;display:flex;flex-direction:column;gap:6px">
+        <label class="chk"><input type="checkbox" data-s="dev"${j.show.dev ? " checked" : ""}> 고급 탭 보이기 (MES 구조조사 · 전후 비교 - 보통은 필요 없음)</label>
+        <label class="chk"><input type="checkbox" data-s="reg"${j.show.reg ? " checked" : ""}> 금형 등록 탭 보이기 (금형 간편등록 · 엑셀 대량등록 · 엑셀칸 설정)</label>
+        <label class="chk"><input type="checkbox" data-s="item"${j.show.item ? " checked" : ""}> 품목 관리 탭 보이기 (품목 마스터 보기·수정 - 보통은 ERP에서 관리)</label></div>
+      <div class="hint" style="margin-top:14px">서버 PC의 파일 위치 (PC 프로그램과 같이 씀):<br>${Object.entries(j.files).map(([k, v]) => `${esc(k)}: ${esc(v)}`).join("<br>")}</div>`;
+    $(".st-save", body).onclick = guard(async () => {
+      const values = {}; $$("input[data-p]", body).forEach(el => values[el.dataset.p] = el.value);
+      await api("/api/set/save", {values, web_pin: $(".st-pin", body).value}, "저장 중..."); alertBox("저장했습니다.");
+    });
+    $(".st-test", body).onclick = guard(async () => {
+      const values = {}; $$("input[data-p]", body).forEach(el => values[el.dataset.p] = el.value);
+      await api("/api/set/save", {values}, "저장 중...");
+      const r = await api("/api/set/test", {}, "연결 테스트 중..."); alertBox(r.msg); ping();
+    });
+    $$("input[data-s]", body).forEach(el => el.onchange = guard(async () => { const r = await api("/api/set/save", {show: {[el.dataset.s]: el.checked}}, "저장 중..."); META.show = r.show; renderTabs(); }));
+  });
+  load();
+};
+BUILD.log = sec => {
+  sec.insertAdjacentHTML("beforeend", `<div class="bar"><button class="b-blue l-load">새로고침</button><span>찾기</span><input type="text" class="l-q" style="width:200px"><span class="sp"></span>
+    <button class="b-teal l-file">기록 파일 받기 (CSV)</button><button class="l-bak">삭제 백업 받기</button></div><div class="l-box"></div><div class="status l-st"></div>`);
+  const q = s => $(s, sec);
+  const T = new Table(q(".l-box"), {check: false, sort: true, emptyText: "읽는 중...", noRows: "아직 기록이 없습니다.", cellCls: (i, c) => c === 5 ? "wrap" : "", onDbl: i => alertBox(T.rows[i].join("\n"), "작업기록")});
+  const load = guard(async () => { const j = await api("/api/log/list", {q: q(".l-q").value}, "기록 읽는 중..."); T.set(j.cols, j.rows); q(".l-st").textContent = `${j.total.toLocaleString()}건` + (j.total > j.rows.length ? ` (최근 ${j.rows.length}건 표시)` : ""); });
+  q(".l-load").onclick = load; q(".l-q").onkeydown = e => { if (e.key === "Enter") load(); };
+  q(".l-file").onclick = guard(() => apiFile("/api/log/file", {}));
+  q(".l-bak").onclick = guard(() => apiFile("/api/log/file", {kind: "backup"}));
+  sec.onShow = load;
+};
+BUILD.help = sec => {
+  let h = "";
+  META.help.forEach(([k, t]) => { h += k === "h1" ? `<h1>${esc(t)}</h1>` : k === "h2" ? `<h2>${esc(t)}</h2>` : k === "p" ? `<p>${esc(t).replace(/\n/g, "<br>")}</p>` : `<li>${esc(t).replace(/^ {3}/, "&nbsp;&nbsp;&nbsp;")}</li>`; });
+  h += `<h2>웹 화면 안내</h2><li>이 화면은 서버 PC의 기존 프로그램(${esc(META.program)})을 그대로 불러와 같은 규칙으로 MES를 고칩니다. 설정·SPM·작업기록 파일도 같이 씁니다.</li>
+    <li>오른쪽 위 [작업자]에 이름을 넣으면 작업기록에 이름이 남습니다.</li><li>숨겨 둔 탭은 [환경설정]에서 체크하면 모든 접속자에게 나타납니다.</li>
+    <li>폰에서는 줄을 눌러 선택한 뒤 [선택 ... 고치기] 버튼을 쓰세요. (두 번 탭 = 더블클릭)</li>`;
+  sec.insertAdjacentHTML("beforeend", `<div class="help">${h}</div>`);
+};
+
+/* ============================================================
    시작
    ============================================================ */
-$("#who").value = LS.get("who", "");
-$("#who").onchange = () => LS.set("who", $("#who").value.trim());
-$("#d1").value = $("#d2").value = today();
-$("#bFetch").onclick = () => fetchGrid();
-["#fmc", "#fit"].forEach(s => $(s).onkeydown = e => { if (e.key === "Enter") fetchGrid(); });
-$("#fq").oninput = () => render();
-$("#bXls").onclick = exportXls;
-$("#bRecent").onclick = openRecent;
-$("#bBatch").onclick = () => openBatch();
-$("#bEdit").onclick = () => openForm();
-$("#bDel").onclick = deleteRows;
-$("#bDetail").onclick = detail;
-$("#bSave").onclick = saveGrid;
-$("#bCancel").onclick = cancelEdits;
-window.addEventListener("beforeunload", e => { if (G.edits.size) { e.preventDefault(); e.returnValue = ""; } });
-
+async function ping(){
+  try { await api("/api/ping", {}, "MES 접속 확인 중..."); $("#db .dot").className = "dot ok"; $("#dbt").textContent = "MES 연결됨"; $("#db").title = ""; }
+  catch (e) { $("#db .dot").className = "dot bad"; $("#dbt").textContent = "MES 연결 안 됨"; $("#db").title = e.message; }
+}
 (async () => {
+  $("#who").value = LS.get("who", "");
+  $("#who").onchange = () => LS.set("who", $("#who").value.trim());
   try {
-    const r = await fetch("/api/info", {method: "POST", body: "{}"});
-    const info = await r.json();
-    if (info.pin && !PIN) {
-      const p = await ask("PIN 입력", "접속 PIN을 넣으세요.", "", "password");
-      if (p !== null) { PIN = p; try { sessionStorage.setItem("pin", p); } catch(e) {} }
-    }
-  } catch (e) {}
-  try {
-    const j = await api("/api/ping", {}, "MES 접속 확인 중...");
-    $("#db .dot").className = "dot ok"; $("#dbt").textContent = "MES 연결됨";
-  } catch (e) {
-    $("#db .dot").className = "dot bad"; $("#dbt").textContent = "MES 연결 안 됨";
-    $("#db").title = e.message;
-  }
+    const r = await fetch("/api/meta", {method: "POST", headers: headers(), body: "{}"});
+    META = await r.json();
+  } catch (e) { document.body.innerHTML = `<div class="empty">서버에 연결할 수 없습니다. 서버 PC의 서버 창이 켜져 있는지 확인하세요.</div>`; return; }
+  $("#apptitle").textContent = META.app_title + " (웹)";
+  document.title = META.app_title + " (웹)";
+  if (META.pin && !PIN) { const p = await ask("PIN 입력", "접속 PIN을 넣으세요.", "", "password"); if (p !== null) { PIN = p; try { sessionStorage.setItem("pin", p); } catch(e) {} } }
+  CUR = null;
+  renderTabs();
+  const want = LS.get("tab", "old");
+  showTab(visibleTabs().some(([k]) => k === want) ? want : "old");
+  ping();
   if (!$("#who").value) $("#who").focus();
 })();
 </script>
