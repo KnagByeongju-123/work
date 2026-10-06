@@ -20,6 +20,7 @@ import types
 import base64
 import socket
 import threading
+import time
 import traceback
 import importlib.util
 import datetime as dt
@@ -2849,6 +2850,7 @@ def api_set_get(body, user):
     return {"fields": [[p, label, hint, show(get_cfg_path(p))] for p, label, hint in SET_FIELDS],
             "db_user": M.DB_USER, "show": show_flags(),
             "allow": bool(CFG.get("allow_item_to_existing")), "web_pin": str(CFG.get("web_pin") or ""),
+            "auto_quit": auto_quit_on(),
             "files": {"설정": M.CFG_PATH, "작업기록": M.LOG_PATH, "삭제 백업": M.BACKUP_PATH, "SPM": M.SPM_XLSX,
                       "프로그램": PROGRAM}}
 
@@ -2871,6 +2873,8 @@ def api_set_save(body, user):
                 CFG[ck] = bool(body["show"][k])
         if "allow" in body:
             CFG["allow_item_to_existing"] = bool(body["allow"])
+        if "auto_quit" in body:
+            CFG["web_auto_quit"] = bool(body["auto_quit"])
         if "web_pin" in body:
             CFG["web_pin"] = str(body.get("web_pin") or "").strip()
         APP.save_cfg()
@@ -3013,14 +3017,65 @@ JOB_ROUTES = {
     "/api/old/delete_mold_check": job_old_delete_mold_check,
     "/api/diff/snap": job_diff_snap, "/api/diff/compare": job_diff_compare,
 }
-NO_PIN = {"/api/meta"}
+# --------------------------------------------------------------
+# 웹 화면을 모두 닫으면 서버도 끄기 (열린 화면이 20초마다 신호를 보냄)
+# --------------------------------------------------------------
+PAGES = {}            # 화면 id -> 마지막 신호 시각
+PAGES_LOCK = threading.Lock()
+PAGE_SEEN = [False]   # 화면이 한 번이라도 열렸는지 (서버만 켜 두고 화면 안 연 경우는 안 끔)
+HB_DEAD = 150         # 이 시간(초) 동안 신호 없으면 닫힌 화면으로 봄 (숨은 탭은 신호가 1분에 1번까지 늦어질 수 있음)
+QUIT_WAIT = 15        # 화면이 모두 닫힌 뒤 이만큼 기다렸다 끔 (새로고침 대비)
+
+
+def auto_quit_on():
+    return CFG.get("web_auto_quit", True) is not False
+
+
+def api_hb(body, user):
+    pid = str(body.get("id") or "")[:40]
+    if pid:
+        with PAGES_LOCK:
+            PAGES[pid] = time.time()
+            PAGE_SEEN[0] = True
+    return {"ok": True, "auto_quit": auto_quit_on()}
+
+
+def api_bye(body, user):
+    with PAGES_LOCK:
+        PAGES.pop(str(body.get("id") or "")[:40], None)
+    return {"ok": True}
+
+
+def quit_watch(srv):
+    empty_since = None
+    while True:
+        time.sleep(3)
+        now = time.time()
+        with PAGES_LOCK:
+            for k in [k for k, t in PAGES.items() if now - t > HB_DEAD]:
+                PAGES.pop(k, None)
+            alive = len(PAGES)
+        if not auto_quit_on() or not PAGE_SEEN[0] or alive:
+            empty_since = None
+            continue
+        if empty_since is None:
+            empty_since = now
+        elif now - empty_since >= QUIT_WAIT:
+            print(f"\n[{dt.datetime.now():%H:%M:%S}] 열린 웹 화면이 없어 서버를 끕니다.")
+            srv.shutdown()
+            return
+
+
+ROUTES["/api/hb"] = api_hb
+ROUTES["/api/bye"] = api_bye
+NO_PIN = {"/api/meta", "/api/hb", "/api/bye"}
 
 
 class Handler(BaseHTTPRequestHandler):
     server_version = "TJD-MES-Web"
 
     def log_message(self, fmt, *args):
-        if "/api/" in (self.path or "") and "/api/job/poll" not in (self.path or ""):
+        if "/api/" in (self.path or "") and not any(x in (self.path or "") for x in ("/api/job/poll", "/api/hb", "/api/bye")):
             sys.stdout.write(f"[{dt.datetime.now():%H:%M:%S}] {self.client_address[0]} {fmt % args}\n")
 
     def send(self, code, data, ctype="application/json; charset=utf-8", extra=None):
@@ -3116,13 +3171,17 @@ def main():
         print(f"   http://{ip}:{port}")
     print(f"   (이 PC에서는 http://localhost:{port})")
     print(" 끄려면 이 창을 닫거나 Ctrl+C")
+    if auto_quit_on():
+        print(" ※ 웹 화면을 모두 닫으면 서버도 자동으로 꺼집니다 (환경설정에서 끌 수 있음)")
     print("=" * 64)
     srv = ThreadingHTTPServer(("0.0.0.0", port), Handler)
     srv.daemon_threads = True
+    threading.Thread(target=quit_watch, args=(srv,), daemon=True).start()
     try:
         srv.serve_forever()
     except KeyboardInterrupt:
         pass
+    srv.server_close()
 
 
 if __name__ == "__main__":

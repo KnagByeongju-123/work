@@ -1745,7 +1745,8 @@ BUILD.set = sec => {
       <div style="margin-top:10px;display:flex;flex-direction:column;gap:6px">
         <label class="chk"><input type="checkbox" data-s="dev"${j.show.dev ? " checked" : ""}> 고급 탭 보이기 (MES 구조조사 · 전후 비교 - 보통은 필요 없음)</label>
         <label class="chk"><input type="checkbox" data-s="reg"${j.show.reg ? " checked" : ""}> 금형 등록 탭 보이기 (금형 간편등록 · 엑셀 대량등록 · 엑셀칸 설정)</label>
-        <label class="chk"><input type="checkbox" data-s="item"${j.show.item ? " checked" : ""}> 품목 관리 탭 보이기 (품목 마스터 보기·수정 - 보통은 ERP에서 관리)</label></div>
+        <label class="chk"><input type="checkbox" data-s="item"${j.show.item ? " checked" : ""}> 품목 관리 탭 보이기 (품목 마스터 보기·수정 - 보통은 ERP에서 관리)</label>
+        <label class="chk"><input type="checkbox" class="st-aq"${j.auto_quit ? " checked" : ""}> 웹 화면을 모두 닫으면 서버(검은 cmd 창)도 자동으로 끄기 (다른 PC·폰에서 열려 있으면 안 꺼짐)</label></div>
       <div class="hint" style="margin-top:14px">서버 PC의 파일 위치 (PC 프로그램과 같이 씀):<br>${Object.entries(j.files).map(([k, v]) => `${esc(k)}: ${esc(v)}`).join("<br>")}</div>`;
     $(".st-save", body).onclick = guard(async () => {
       const values = {}; $$("input[data-p]", body).forEach(el => values[el.dataset.p] = el.value);
@@ -1756,6 +1757,7 @@ BUILD.set = sec => {
       await api("/api/set/save", {values}, "저장 중...");
       const r = await api("/api/set/test", {}, "연결 테스트 중..."); alertBox(r.msg); ping();
     });
+    $(".st-aq", body).onchange = guard(async e => { await api("/api/set/save", {auto_quit: e.target.checked}, "저장 중..."); });
     $$("input[data-s]", body).forEach(el => el.onchange = guard(async () => { const r = await api("/api/set/save", {show: {[el.dataset.s]: el.checked}}, "저장 중..."); META.show = r.show; renderTabs(); }));
   });
   load();
@@ -1802,8 +1804,20 @@ async function ping(){
   const want = LS.get("tab", "old");
   showTab(visibleTabs().some(([k]) => k === want) ? want : "old");
   ping();
+  startHeartbeat();
   if (!$("#who").value) $("#who").focus();
 })();
+
+/* 이 화면이 열려 있다고 서버에 알림 (화면을 모두 닫으면 서버가 스스로 꺼짐) */
+function startHeartbeat(){
+  const id = Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+  const hb = () => fetch("/api/hb", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({id})}).catch(() => {});
+  hb();
+  setInterval(hb, 20000);
+  document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible") hb(); });
+  window.addEventListener("pageshow", e => { if (e.persisted) hb(); });
+  window.addEventListener("pagehide", () => { try { navigator.sendBeacon("/api/bye", JSON.stringify({id})); } catch (e) {} });
+}
 </script>
 </body>
 </html>
