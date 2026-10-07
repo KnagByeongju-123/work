@@ -22,9 +22,8 @@ if not defined SRV (
 )
 echo Server file: %SRV%
 
-rem Open the web page 3 seconds later (server starts first)
-start "" /min cmd /c "timeout /t 3 /nobreak >nul & start http://localhost:%PORT%"
-%PY% "%SRV%" %PORT%
+rem --open : the server opens the web page itself when it is ready
+%PY% "%SRV%" %PORT% --open
 rem Normal stop (all web pages closed) = close this window. Error = keep it open.
 if %errorlevel% equ 0 exit
 echo.

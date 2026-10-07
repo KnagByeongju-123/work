@@ -22,6 +22,7 @@ import socket
 import threading
 import time
 import traceback
+import webbrowser
 import importlib.util
 import datetime as dt
 from collections import OrderedDict
@@ -3166,7 +3167,26 @@ def local_ips():
 
 
 def main():
-    port = int(sys.argv[1]) if len(sys.argv) > 1 else int(CFG.get("web_port") or 8000)
+    args = sys.argv[1:]
+    want_open = "--open" in args
+    nums = [a for a in args if a.isdigit()]
+    port = int(nums[0]) if nums else int(CFG.get("web_port") or 8000)
+    url = f"http://localhost:{port}"
+    # 먼저 포트를 잡는다 (DB 확인이 오래 걸려도 브라우저 접속은 기다렸다가 처리됨)
+    # 윈도우에서는 같은 포트를 두 번 잡지 않도록 (이미 켜진 서버와 겹치지 않게)
+    ThreadingHTTPServer.allow_reuse_address = os.name != "nt"
+    try:
+        srv = ThreadingHTTPServer(("0.0.0.0", port), Handler)
+    except OSError as e:
+        print("=" * 64)
+        print(f" ※ {port}번 포트를 쓸 수 없습니다: {e}")
+        print("   서버가 이미 켜져 있으면 그 화면을 엽니다.")
+        print("   다른 프로그램이 쓰는 중이면 배치파일의 PORT=8000 을 다른 숫자(예: 8080)로 바꾸세요.")
+        print("=" * 64)
+        if want_open:
+            webbrowser.open(url)
+        sys.exit(2)
+    srv.daemon_threads = True
     print("=" * 64)
     print(f" 태진다이텍 MES 웹 서버  {VERSION}")
     print(f" 프로그램: {os.path.basename(PROGRAM)}  (DB 규칙을 이 파일에서 그대로 씀)")
@@ -3177,6 +3197,7 @@ def main():
     if oracledb is None:
         print(" ※ oracledb 없음: python -m pip install oracledb")
     else:
+        print(" DB 접속 확인 중...", flush=True)
         try:
             print(f" DB 접속 확인: OK (DB 시각 {api_ping({}, '')['db_time']})")
         except Exception as e:
@@ -3187,14 +3208,14 @@ def main():
     print(" 다른 PC·폰 브라우저에서 접속:")
     for ip in local_ips() or ["이PC주소"]:
         print(f"   http://{ip}:{port}")
-    print(f"   (이 PC에서는 http://localhost:{port})")
+    print(f"   (이 PC에서는 {url})")
     print(" 끄려면 이 창을 닫거나 Ctrl+C")
     if auto_quit_on():
         print(" ※ 웹 화면을 모두 닫으면 서버도 자동으로 꺼집니다 (환경설정에서 끌 수 있음)")
-    print("=" * 64)
-    srv = ThreadingHTTPServer(("0.0.0.0", port), Handler)
-    srv.daemon_threads = True
+    print("=" * 64, flush=True)
     threading.Thread(target=quit_watch, args=(srv,), daemon=True).start()
+    if want_open:   # 서버가 준비된 뒤에 브라우저 열기
+        threading.Timer(0.5, lambda: webbrowser.open(url)).start()
     try:
         srv.serve_forever()
     except KeyboardInterrupt:
