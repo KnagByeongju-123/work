@@ -2905,7 +2905,7 @@ def api_set_get(body, user):
     return {"fields": [[p, label, hint, show(get_cfg_path(p))] for p, label, hint in SET_FIELDS],
             "db_user": M.DB_USER, "show": show_flags(),
             "allow": bool(CFG.get("allow_item_to_existing")), "web_pin": str(CFG.get("web_pin") or ""),
-            "auto_quit": auto_quit_on(),
+            "auto_quit": CFG.get("web_auto_quit", True) is not False,
             "files": {"설정": M.CFG_PATH, "작업기록": M.LOG_PATH, "삭제 백업": M.BACKUP_PATH, "SPM": M.SPM_XLSX,
                       "프로그램": PROGRAM}}
 
@@ -3082,8 +3082,11 @@ HB_DEAD = 150         # 이 시간(초) 동안 신호 없으면 닫힌 화면으
 QUIT_WAIT = 15        # 화면이 모두 닫힌 뒤 이만큼 기다렸다 끔 (새로고침 대비)
 
 
+LAUNCHED_BY_BAT = [False]   # 배치파일(--open)로 켰을 때만 자동 종료. server.py 를 직접 켜면 계속 켜져 있음
+
+
 def auto_quit_on():
-    return CFG.get("web_auto_quit", True) is not False
+    return LAUNCHED_BY_BAT[0] and CFG.get("web_auto_quit", True) is not False
 
 
 def api_hb(body, user):
@@ -3223,6 +3226,7 @@ def local_ips():
 def main():
     args = sys.argv[1:]
     want_open = "--open" in args
+    LAUNCHED_BY_BAT[0] = want_open
     nums = [a for a in args if a.isdigit()]
     port = int(nums[0]) if nums else int(CFG.get("web_port") or 8000)
     url = f"http://localhost:{port}"
@@ -3266,6 +3270,8 @@ def main():
     print(" 끄려면 이 창을 닫거나 Ctrl+C")
     if auto_quit_on():
         print(" ※ 웹 화면을 모두 닫으면 서버도 자동으로 꺼집니다 (환경설정에서 끌 수 있음)")
+    else:
+        print(" ※ 서버 단독 실행: 웹 화면을 닫아도 서버는 계속 켜져 있습니다")
     print("=" * 64, flush=True)
     threading.Thread(target=quit_watch, args=(srv,), daemon=True).start()
     if want_open:   # 서버가 준비된 뒤에 브라우저 열기
