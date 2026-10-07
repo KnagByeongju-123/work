@@ -74,27 +74,81 @@ def _stub_tk():
         sys.modules[f"tkinter.{s}"] = m
 
 
+PROG_TXT = os.path.join(HERE, "program_path.txt")   # 찾은(고른) 프로그램 위치를 기억
+
+
+def is_program(p):
+    """기존 MES 관리 프로그램 파일인지 (파일 이름은 상관없음, 내용으로 판단)"""
+    if not p or not os.path.isfile(p) or os.path.abspath(p) == os.path.abspath(__file__):
+        return False
+    try:
+        with open(p, "rb") as f:
+            head = f.read().decode("utf-8", "ignore")
+    except Exception:
+        return False
+    return "class Mes" in head and "GRID_SPECS" in head and "class App" in head
+
+
 def find_program():
-    """같은 폴더(또는 한 칸 위)에서 기존 프로그램 파일 찾기 (가장 최근 것)"""
-    cands = []
-    for folder in (HERE, os.path.dirname(HERE)):
-        for p in glob.glob(os.path.join(folder, "*.py")):
-            if os.path.abspath(p) == os.path.abspath(__file__):
-                continue
-            try:
-                with open(p, encoding="utf-8", errors="ignore") as f:
-                    head = f.read()
-            except Exception:
-                continue
-            if "class Mes" in head and "GRID_SPECS" in head and "class App" in head:
-                cands.append(p)
-    if not cands:
-        raise SystemExit("기존 프로그램(태진다이텍_MES관리_v7_x.py)을 server.py 와 같은 폴더에 넣으세요.")
-    return max(cands, key=os.path.getmtime)
+    """기존 프로그램(.py) 찾기 - 이름이 달라도 됨.
+    1) program_path.txt 에 적힌 곳  2) 같은 폴더·한 칸 위 폴더와 그 하위 폴더, 바탕화면·문서
+    3) 그래도 없으면 파일 고르는 창을 띄움 (한 번 고르면 기억)"""
+    try:
+        with open(PROG_TXT, encoding="utf-8") as f:
+            p = f.read().strip().strip('"')
+        if is_program(p):
+            return p
+    except Exception:
+        pass
+    home = os.path.expanduser("~")
+    roots = [HERE, os.path.dirname(HERE)] + [os.path.join(home, d) for d in ("Desktop", "바탕 화면", "Documents", "문서", "OneDrive\\Desktop", "OneDrive\\바탕 화면", "Downloads")]
+    seen, cands = set(), []
+    for root in roots:
+        if not os.path.isdir(root):
+            continue
+        for depth in ("", "*", os.path.join("*", "*")):
+            for p in glob.glob(os.path.join(root, depth, "*.py")) + glob.glob(os.path.join(root, depth, "*.pyw")):
+                ap = os.path.abspath(p)
+                if ap in seen:
+                    continue
+                seen.add(ap)
+                if is_program(ap):
+                    cands.append(ap)
+        if cands and root in (HERE, os.path.dirname(HERE)):
+            break   # 가까운 곳에서 찾았으면 더 멀리 안 봄
+    if cands:
+        return max(cands, key=os.path.getmtime)
+    # 파일 고르는 창 (서버 PC 화면에 뜸)
+    print(" 기존 MES 관리 프로그램(.py)을 찾지 못했습니다. 파일 고르는 창에서 골라 주세요...", flush=True)
+    try:
+        import tkinter
+        from tkinter import filedialog
+        r = tkinter.Tk()
+        r.withdraw()
+        r.attributes("-topmost", True)
+        p = filedialog.askopenfilename(title="기존 MES 관리 프로그램(.py) 고르기 (태진다이텍_MES관리_v7_x.py)",
+                                       filetypes=[("파이썬 파일", "*.py *.pyw"), ("모든 파일", "*.*")])
+        r.destroy()
+        for k in [k for k in sys.modules if k == "tkinter" or k.startswith("tkinter.")]:
+            del sys.modules[k]   # 아래에서 가짜 tkinter 로 바꿔 끼움
+    except Exception:
+        p = ""
+    if p and is_program(p):
+        try:
+            with open(PROG_TXT, "w", encoding="utf-8") as f:
+                f.write(os.path.abspath(p))
+        except Exception:
+            pass
+        return os.path.abspath(p)
+    if p:
+        raise SystemExit(f" 고른 파일은 MES 관리 프로그램이 아닙니다: {p}")
+    raise SystemExit(" 기존 MES 관리 프로그램(.py)을 찾지 못했습니다.\n"
+                     " - 이 서버 파일과 같은 폴더에 프로그램 .py 를 넣거나 (파일 이름은 상관없음)\n"
+                     f" - {PROG_TXT} 파일을 만들어 프로그램 위치(전체 경로)를 한 줄로 적으세요.")
 
 
-_stub_tk()
 PROGRAM = find_program()
+_stub_tk()
 _spec = importlib.util.spec_from_file_location("mesapp", PROGRAM)
 M = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(M)
