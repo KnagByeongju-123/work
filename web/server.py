@@ -3071,6 +3071,22 @@ ROUTES["/api/bye"] = api_bye
 NO_PIN = {"/api/meta", "/api/hb", "/api/bye"}
 
 
+def find_page():
+    """웹 화면 html 찾기: index.html 이 있으면 그것, 없으면 이 웹 화면 html (이름이 달라도 됨)"""
+    p = os.path.join(HERE, "index.html")
+    if os.path.exists(p):
+        return p
+    hits = []
+    for f in glob.glob(os.path.join(HERE, "*.htm*")):
+        try:
+            with open(f, "r", encoding="utf-8", errors="ignore") as fh:
+                if "startHeartbeat" in fh.read():
+                    hits.append(f)
+        except Exception:
+            pass
+    return max(hits, key=os.path.getmtime) if hits else None
+
+
 class Handler(BaseHTTPRequestHandler):
     server_version = "TJD-MES-Web"
 
@@ -3093,9 +3109,9 @@ class Handler(BaseHTTPRequestHandler):
     def do_GET(self):
         p = urlparse(self.path).path
         if p in ("/", "/index.html"):
-            path = os.path.join(HERE, "index.html")
-            if not os.path.exists(path):
-                return self.send(404, "index.html 이 server.py 와 같은 폴더에 없습니다.".encode("utf-8"),
+            path = find_page()
+            if not path:
+                return self.send(404, "웹 화면 html 파일이 서버 파일과 같은 폴더에 없습니다.".encode("utf-8"),
                                  "text/plain; charset=utf-8")
             with open(path, "rb") as f:
                 return self.send(200, f.read(), "text/html; charset=utf-8")
@@ -3154,6 +3170,8 @@ def main():
     print("=" * 64)
     print(f" 태진다이텍 MES 웹 서버  {VERSION}")
     print(f" 프로그램: {os.path.basename(PROGRAM)}  (DB 규칙을 이 파일에서 그대로 씀)")
+    pg = find_page()
+    print(f" 웹 화면: {os.path.basename(pg) if pg else '※ html 파일 없음 (서버 파일과 같은 폴더에 두세요)'}")
     print(f" 설정: {M.CFG_PATH if os.path.exists(M.CFG_PATH) else '(설정 파일 없음 - 기본값)'}")
     print(f" DB  : {CFG['oracle']['dsn']}")
     if oracledb is None:
